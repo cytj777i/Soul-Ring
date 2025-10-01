@@ -5,6 +5,28 @@ local SoundService = game:GetService("SoundService")
 local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
+-- 自定义 delay 函数
+local function delay(time, callback)
+    local start = tick()
+    local connection
+    connection = RunService.Heartbeat:Connect(function()
+        if tick() - start >= time then
+            connection:Disconnect()
+            callback()
+        end
+    end)
+end
+
+-- 自定义 table.find 函数
+local function tableFind(t, value)
+    for i, v in ipairs(t) do
+        if v == value then
+            return i
+        end
+    end
+    return nil
+end
+
 -- 音效函数
 local function playSound(soundId)
     local sound = Instance.new("Sound")
@@ -254,39 +276,6 @@ Footer.Font = Enum.Font.Gotham
 Footer.TextSize = 12
 Footer.Parent = ControlsContainer
 
--- 魂环逻辑
-local Workspace = game:GetService("Workspace")
-local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-
-if not getgenv().Network then
-    getgenv().Network = { 
-        BaseParts = {}, 
-        Velocity = Vector3.new(14.46262424, 14.46262424, 14.46262424) 
-    }
-
-    Network.RetainPart = function(Part)
-        if typeof(Part) == "Instance" and Part:IsA("BasePart") and Part:IsDescendantOf(Workspace) then
-            table.insert(Network.BaseParts, Part)
-            Part.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
-            Part.CanCollide = false
-        end
-    end
-
-    local function EnablePartControl()
-        LocalPlayer.ReplicationFocus = Workspace
-        RunService.Heartbeat:Connect(function()
-            sethiddenproperty(LocalPlayer, "SimulationRadius", math.huge)
-            for _, Part in pairs(Network.BaseParts) do
-                if Part:IsDescendantOf(Workspace) then
-                    Part.Velocity = Network.Velocity
-                end
-            end
-        end)
-    end
-    EnablePartControl()
-end
-
 -- 魂环控制变量
 local ringPartsEnabled = false
 local rotationSpeed = 50  -- 0-100 scale
@@ -310,14 +299,14 @@ end
 
 local function addPart(part)
     if RetainPart(part) then
-        if not table.find(parts, part) then
+        if not tableFind(parts, part) then
             table.insert(parts, part)
         end
     end
 end
 
 local function removePart(part)
-    local index = table.find(parts, part)
+    local index = tableFind(parts, part)
     if index then
         table.remove(parts, index)
     end
@@ -448,7 +437,7 @@ ToggleButton.MouseButton1Click:Connect(function()
     end
     
     playSound("12221967")
-end) -- 这里添加了缺失的 end
+end)
 
 -- 最小化功能
 local minimized = false
@@ -464,7 +453,7 @@ MinimizeButton.MouseButton1Click:Connect(function()
         ControlsContainer.Visible = true
     end
     playSound("12221967")
-end) -- 这里添加了缺失的 end
+end)
 
 -- GUI拖动功能
 local dragging
