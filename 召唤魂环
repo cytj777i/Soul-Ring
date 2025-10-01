@@ -1,20 +1,7 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local SoundService = game:GetService("SoundService")
-local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
-
--- 音效函数
-local function playSound(soundId)
-    local sound = Instance.new("Sound")
-    sound.SoundId = "rbxassetid://" .. soundId
-    sound.Parent = SoundService
-    sound:Play()
-    sound.Ended:Connect(function()
-        sound:Destroy()
-    end)
-end
 
 -- GUI界面
 local ScreenGui = Instance.new("ScreenGui")
@@ -29,200 +16,34 @@ MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
 MainFrame.BorderSizePixel = 0
 MainFrame.Parent = ScreenGui
 
--- 圆角
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 20)
-UICorner.Parent = MainFrame
-
--- 标题
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 50)
-Title.Position = UDim2.new(0, 0, 0, 0)
-Title.Text = "成为封号斗罗脚本"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 20
-Title.Parent = MainFrame
-
--- 标题圆角
-local TitleCorner = Instance.new("UICorner")
-TitleCorner.CornerRadius = UDim.new(0, 20)
-TitleCorner.Parent = Title
-
--- 主开关按钮
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0.8, 0, 0, 45)
-ToggleButton.Position = UDim2.new(0.1, 0, 0.2, 0)
-ToggleButton.Text = "魂环: 关闭"
-ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.Font = Enum.Font.GothamBold
-ToggleButton.TextSize = 16
-ToggleButton.Parent = MainFrame
-
-local ToggleCorner = Instance.new("UICorner")
-ToggleCorner.CornerRadius = UDim.new(0, 10)
-ToggleCorner.Parent = ToggleButton
-
--- 速度控制
-local SpeedLabel = Instance.new("TextLabel")
-SpeedLabel.Size = UDim2.new(0.8, 0, 0, 25)
-SpeedLabel.Position = UDim2.new(0.1, 0, 0.45, 0)
-SpeedLabel.Text = "旋转速度: 50"
-SpeedLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-SpeedLabel.BackgroundTransparency = 1
-SpeedLabel.Font = Enum.Font.Gotham
-SpeedLabel.TextSize = 14
-SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
-SpeedLabel.Parent = MainFrame
-
-local DecreaseSpeed = Instance.new("TextButton")
-DecreaseSpeed.Size = UDim2.new(0.15, 0, 0, 30)
-DecreaseSpeed.Position = UDim2.new(0.1, 0, 0.55, 0)
-DecreaseSpeed.Text = "-"
-DecreaseSpeed.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
-DecreaseSpeed.TextColor3 = Color3.fromRGB(255, 255, 255)
-DecreaseSpeed.Font = Enum.Font.GothamBold
-DecreaseSpeed.TextSize = 18
-DecreaseSpeed.Parent = MainFrame
-
-local DecreaseCorner = Instance.new("UICorner")
-DecreaseCorner.CornerRadius = UDim.new(0, 8)
-DecreaseCorner.Parent = DecreaseSpeed
-
-local IncreaseSpeed = Instance.new("TextButton")
-IncreaseSpeed.Size = UDim2.new(0.15, 0, 0, 30)
-IncreaseSpeed.Position = UDim2.new(0.75, 0, 0.55, 0)
-IncreaseSpeed.Text = "+"
-IncreaseSpeed.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
-IncreaseSpeed.TextColor3 = Color3.fromRGB(255, 255, 255)
-IncreaseSpeed.Font = Enum.Font.GothamBold
-IncreaseSpeed.TextSize = 18
-IncreaseSpeed.Parent = MainFrame
-
-local IncreaseCorner = Instance.new("UICorner")
-IncreaseCorner.CornerRadius = UDim.new(0, 8)
-IncreaseCorner.Parent = IncreaseSpeed
-
-local SpeedDisplay = Instance.new("TextLabel")
-SpeedDisplay.Size = UDim2.new(0.5, 0, 0, 30)
-SpeedDisplay.Position = UDim2.new(0.3, 0, 0.55, 0)
-SpeedDisplay.Text = "50"
-SpeedDisplay.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
-SpeedDisplay.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedDisplay.Font = Enum.Font.Gotham
-SpeedDisplay.TextSize = 16
-SpeedDisplay.Parent = MainFrame
-
-local SpeedDisplayCorner = Instance.new("UICorner")
-SpeedDisplayCorner.CornerRadius = UDim.new(0, 8)
-SpeedDisplayCorner.Parent = SpeedDisplay
-
--- 半径控制
-local RadiusLabel = Instance.new("TextLabel")
-RadiusLabel.Size = UDim2.new(0.8, 0, 0, 25)
-RadiusLabel.Position = UDim2.new(0.1, 0, 0.7, 0)
-RadiusLabel.Text = "环绕半径: 50"
-RadiusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-RadiusLabel.BackgroundTransparency = 1
-RadiusLabel.Font = Enum.Font.Gotham
-RadiusLabel.TextSize = 14
-RadiusLabel.TextXAlignment = Enum.TextXAlignment.Left
-RadiusLabel.Parent = MainFrame
-
-local DecreaseRadius = Instance.new("TextButton")
-DecreaseRadius.Size = UDim2.new(0.15, 0, 0, 30)
-DecreaseRadius.Position = UDim2.new(0.1, 0, 0.8, 0)
-DecreaseRadius.Text = "-"
-DecreaseRadius.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
-DecreaseRadius.TextColor3 = Color3.fromRGB(255, 255, 255)
-DecreaseRadius.Font = Enum.Font.GothamBold
-DecreaseRadius.TextSize = 18
-DecreaseRadius.Parent = MainFrame
-
-local DecreaseRadiusCorner = Instance.new("UICorner")
-DecreaseRadiusCorner.CornerRadius = UDim.new(0, 8)
-DecreaseRadiusCorner.Parent = DecreaseRadius
-
-local IncreaseRadius = Instance.new("TextButton")
-IncreaseRadius.Size = UDim2.new(0.15, 0, 0, 30)
-IncreaseRadius.Position = UDim2.new(0.75, 0, 0.8, 0)
-IncreaseRadius.Text = "+"
-IncreaseRadius.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
-IncreaseRadius.TextColor3 = Color3.fromRGB(255, 255, 255)
-IncreaseRadius.Font = Enum.Font.GothamBold
-IncreaseRadius.TextSize = 18
-IncreaseRadius.Parent = MainFrame
-
-local IncreaseRadiusCorner = Instance.new("UICorner")
-IncreaseRadiusCorner.CornerRadius = UDim.new(0, 8)
-IncreaseRadiusCorner.Parent = IncreaseRadius
-
-local RadiusDisplay = Instance.new("TextLabel")
-RadiusDisplay.Size = UDim2.new(0.5, 0, 0, 30)
-RadiusDisplay.Position = UDim2.new(0.3, 0, 0.8, 0)
-RadiusDisplay.Text = "50"
-RadiusDisplay.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
-RadiusDisplay.TextColor3 = Color3.fromRGB(255, 255, 255)
-RadiusDisplay.Font = Enum.Font.Gotham
-RadiusDisplay.TextSize = 16
-RadiusDisplay.Parent = MainFrame
-
-local RadiusDisplayCorner = Instance.new("UICorner")
-RadiusDisplayCorner.CornerRadius = UDim.new(0, 8)
-RadiusDisplayCorner.Parent = RadiusDisplay
-
--- 水印
-local Watermark = Instance.new("TextLabel")
-Watermark.Size = UDim2.new(1, 0, 0, 20)
-Watermark.Position = UDim2.new(0, 0, 1, -20)
-Watermark.Text = "成为封号斗罗脚本-作者XTTT"
-Watermark.TextColor3 = Color3.fromRGB(100, 100, 120)
-Watermark.BackgroundTransparency = 1
-Watermark.Font = Enum.Font.Gotham
-Watermark.TextSize = 12
-Watermark.Parent = MainFrame
-
--- 最小化按钮
-local MinimizeButton = Instance.new("TextButton")
-MinimizeButton.Size = UDim2.new(0, 25, 0, 25)
-MinimizeButton.Position = UDim2.new(1, -30, 0, 10)
-MinimizeButton.Text = "-"
-MinimizeButton.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
-MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-MinimizeButton.Font = Enum.Font.GothamBold
-MinimizeButton.TextSize = 18
-MinimizeButton.Parent = MainFrame
-
-local MinimizeCorner = Instance.new("UICorner")
-MinimizeCorner.CornerRadius = UDim.new(0, 12)
-MinimizeCorner.Parent = MinimizeButton
+-- ... (GUI界面创建代码：圆角、标题、按钮、标签等，与你提供的原始代码完全一致，这里为了节省篇幅省略)
+-- 注意：请将你原始脚本中创建GUI的所有代码（从MainFrame到MinimizeButton）放在这里
 
 -- 魂环控制变量
 local ringPartsEnabled = false
 local rotationSpeed = 50
 local ringRadius = 50
-local height = 100
-local attractionStrength = 1000
+local attractionStrength = 1000 -- 吸引力强度
 
 local parts = {}
 
--- 环绕逻辑（基于可运行脚本的简化版本）
-local function RetainPart(Part)
-    if Part:IsA("BasePart") and not Part.Anchored and Part:IsDescendantOf(workspace) then
-        if Part.Parent == LocalPlayer.Character or Part:IsDescendantOf(LocalPlayer.Character) then
+-- 环绕逻辑
+local function shouldRetainPart(part)
+    -- 检查部件是否有效且为非锚定基础部件
+    if part:IsA("BasePart") and not part.Anchored and part:IsDescendantOf(workspace) then
+        -- 排除玩家自身的角色部件
+        if part.Parent == LocalPlayer.Character or Part:IsDescendantOf(LocalPlayer.Character) then
             return false
         end
-        Part.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
-        Part.CanCollide = false
+        -- 移除了 Part.CanCollide = false 的设置，允许物体与环境碰撞
+        part.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0) -- 设置质量等物理属性
         return true
     end
     return false
 end
 
 local function addPart(part)
-    if RetainPart(part) then
+    if shouldRetainPart(part) then
         local found = false
         for _, p in ipairs(parts) do
             if p == part then
@@ -249,7 +70,6 @@ end
 for _, part in pairs(workspace:GetDescendants()) do
     addPart(part)
 end
-
 workspace.DescendantAdded:Connect(addPart)
 workspace.DescendantRemoving:Connect(removePart)
 
@@ -259,67 +79,71 @@ RunService.Heartbeat:Connect(function()
     
     local humanoidRootPart = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if humanoidRootPart then
-        local tornadoCenter = humanoidRootPart.Position
-        local actualRadius = ringRadius * 10
-        local actualSpeed = rotationSpeed * 0.1
+        local center = humanoidRootPart.Position
+        local actualRadius = ringRadius * 5 -- 环绕半径倍数
+        local actualSpeed = rotationSpeed * 0.01 -- 旋转速度系数
         
         for _, part in pairs(parts) do
             if part.Parent and not part.Anchored then
                 local pos = part.Position
-                local distance = (Vector3.new(pos.X, tornadoCenter.Y, pos.Z) - tornadoCenter).Magnitude
-                local angle = math.atan2(pos.Z - tornadoCenter.Z, pos.X - tornadoCenter.X)
-                local newAngle = angle + math.rad(actualSpeed)
+                -- 计算物体在XZ平面上到玩家的向量和距离
+                local toPart = Vector3.new(pos.X - center.X, 0, pos.Z - center.Z)
+                local distance = toPart.Magnitude
                 
-                local targetPos = Vector3.new(
-                    tornadoCenter.X + math.cos(newAngle) * math.min(actualRadius, distance),
-                    tornadoCenter.Y + (height * (math.abs(math.sin((pos.Y - tornadoCenter.Y) / height)))),
-                    tornadoCenter.Z + math.sin(newAngle) * math.min(actualRadius, distance)
-                )
-                
-                local directionToTarget = (targetPos - part.Position).unit
-                part.Velocity = directionToTarget * attractionStrength
+                if distance > 0.1 then -- 避免除以零
+                    -- 计算当前角度并增加旋转
+                    local currentAngle = math.atan2(toPart.Z, toPart.X)
+                    local newAngle = currentAngle + actualSpeed
+                    
+                    -- 计算目标位置（在XZ平面上形成一个环）
+                    local targetPos = Vector3.new(
+                        center.X + math.cos(newAngle) * actualRadius,
+                        center.Y, -- 保持与玩家相同的高度，可以根据需要调整
+                        center.Z + math.sin(newAngle) * actualRadius
+                    )
+                    
+                    -- 计算指向目标位置的方向向量
+                    local direction = (targetPos - part.Position)
+                    -- 应用力，使物体向目标位置移动
+                    part.Velocity = direction.Unit * attractionStrength
+                end
             end
         end
     end
 end)
 
--- 按钮功能
+-- 按钮功能 (已移除音效)
 ToggleButton.MouseButton1Click:Connect(function()
     ringPartsEnabled = not ringPartsEnabled
     ToggleButton.Text = ringPartsEnabled and "魂环: 开启" or "魂环: 关闭"
     ToggleButton.BackgroundColor3 = ringPartsEnabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
-    playSound("12221967")
 end)
 
 DecreaseSpeed.MouseButton1Click:Connect(function()
     rotationSpeed = math.max(1, rotationSpeed - 5)
     SpeedDisplay.Text = rotationSpeed
     SpeedLabel.Text = "旋转速度: " .. rotationSpeed
-    playSound("12221967")
 end)
 
 IncreaseSpeed.MouseButton1Click:Connect(function()
     rotationSpeed = math.min(100, rotationSpeed + 5)
     SpeedDisplay.Text = rotationSpeed
     SpeedLabel.Text = "旋转速度: " .. rotationSpeed
-    playSound("12221967")
 end)
 
 DecreaseRadius.MouseButton1Click:Connect(function()
     ringRadius = math.max(1, ringRadius - 5)
     RadiusDisplay.Text = ringRadius
     RadiusLabel.Text = "环绕半径: " .. ringRadius
-    playSound("12221967")
 end)
 
 IncreaseRadius.MouseButton1Click:Connect(function()
     ringRadius = math.min(100, ringRadius + 5)
     RadiusDisplay.Text = ringRadius
     RadiusLabel.Text = "环绕半径: " .. ringRadius
-    playSound("12221967")
 end)
 
--- 最小化功能
+-- 最小化功能 (已移除音效)
 local minimized = false
 MinimizeButton.MouseButton1Click:Connect(function()
     minimized = not minimized
@@ -350,10 +174,9 @@ MinimizeButton.MouseButton1Click:Connect(function()
         RadiusDisplay.Visible = true
         Watermark.Visible = true
     end
-    playSound("12221967")
 end)
 
--- GUI拖动功能
+-- GUI拖动功能 (保持不变)
 local dragging
 local dragInput
 local dragStart
@@ -389,6 +212,3 @@ UserInputService.InputChanged:Connect(function(input)
         update(input)
     end
 end)
-
--- 播放初始音效
-playSound("2865227271")
