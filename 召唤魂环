@@ -3,14 +3,26 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local SoundService = game:GetService("SoundService")
 local TweenService = game:GetService("TweenService")
-local LocalPlayer = Players.LocalPlayer              
+local LocalPlayer = Players.LocalPlayer
+
+-- 音效函数
+local function playSound(soundId)
+    local sound = Instance.new("Sound")
+    sound.SoundId = "rbxassetid://" .. soundId
+    sound.Parent = SoundService
+    sound:Play()
+    sound.Ended:Connect(function()
+        sound:Destroy()
+    end)
+end
+
 -- GUI界面
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "DarkRingControl"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- GUI界面
+-- 主容器
 local MainContainer = Instance.new("Frame")
 MainContainer.Size = UDim2.new(0, 350, 0, 450)
 MainContainer.Position = UDim2.new(0.5, -175, 0.5, -225)
@@ -18,24 +30,29 @@ MainContainer.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
 MainContainer.BorderSizePixel = 0
 MainContainer.Parent = ScreenGui
 
--- GUI界面
+-- 发光边框
 local BorderGlow = Instance.new("UIStroke")
 BorderGlow.Color = Color3.fromRGB(0, 150, 255)
 BorderGlow.Thickness = 3
 BorderGlow.Transparency = 0.3
 BorderGlow.Parent = MainContainer
+
 local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 12)
 MainCorner.Parent = MainContainer
+
+-- 标题栏
 local Header = Instance.new("Frame")
 Header.Size = UDim2.new(1, 0, 0, 60)
 Header.Position = UDim2.new(0, 0, 0, 0)
 Header.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
 Header.BorderSizePixel = 0
 Header.Parent = MainContainer
+
 local HeaderCorner = Instance.new("UICorner")
 HeaderCorner.CornerRadius = UDim.new(0, 12)
 HeaderCorner.Parent = Header
+
 local HeaderGradient = Instance.new("UIGradient")
 HeaderGradient.Color = ColorSequence.new({
     ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 100, 255)),
@@ -66,11 +83,15 @@ SubTitle.Font = Enum.Font.Gotham
 SubTitle.TextSize = 12
 SubTitle.TextXAlignment = Enum.TextXAlignment.Left
 SubTitle.Parent = Header
+
+-- 控制容器
 local ControlsContainer = Instance.new("Frame")
 ControlsContainer.Size = UDim2.new(1, -20, 1, -80)
 ControlsContainer.Position = UDim2.new(0, 10, 0, 70)
 ControlsContainer.BackgroundTransparency = 1
 ControlsContainer.Parent = MainContainer
+
+-- 主开关按钮
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Size = UDim2.new(1, 0, 0, 50)
 ToggleButton.Position = UDim2.new(0, 0, 0, 0)
@@ -149,7 +170,7 @@ local SpeedKnobCorner = Instance.new("UICorner")
 SpeedKnobCorner.CornerRadius = UDim.new(1, 0)
 SpeedKnobCorner.Parent = SpeedKnob
 
--- 魂环放大及缩小
+-- 魂环大小控制
 local SizeSection = Instance.new("Frame")
 SizeSection.Size = UDim2.new(1, 0, 0, 100)
 SizeSection.Position = UDim2.new(0, 0, 0, 185)
@@ -207,7 +228,7 @@ local SizeKnobCorner = Instance.new("UICorner")
 SizeKnobCorner.CornerRadius = UDim.new(1, 0)
 SizeKnobCorner.Parent = SizeKnob
 
--- 按钮最小化功能
+-- 最小化按钮
 local MinimizeButton = Instance.new("TextButton")
 MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
 MinimizeButton.Position = UDim2.new(1, -35, 0, 15)
@@ -222,7 +243,7 @@ local MinimizeCorner = Instance.new("UICorner")
 MinimizeCorner.CornerRadius = UDim.new(1, 0)
 MinimizeCorner.Parent = MinimizeButton
 
--- 脚本加载
+-- 页脚
 local Footer = Instance.new("TextLabel")
 Footer.Size = UDim2.new(1, 0, 0, 30)
 Footer.Position = UDim2.new(0, 0, 1, -30)
@@ -243,7 +264,7 @@ if not getgenv().Network then
         BaseParts = {}, 
         Velocity = Vector3.new(14.46262424, 14.46262424, 14.46262424) 
     }
-    
+
     Network.RetainPart = function(Part)
         if typeof(Part) == "Instance" and Part:IsA("BasePart") and Part:IsDescendantOf(Workspace) then
             table.insert(Network.BaseParts, Part)
@@ -251,7 +272,7 @@ if not getgenv().Network then
             Part.CanCollide = false
         end
     end
-    
+
     local function EnablePartControl()
         LocalPlayer.ReplicationFocus = Workspace
         RunService.Heartbeat:Connect(function()
@@ -310,29 +331,29 @@ end
 workspace.DescendantAdded:Connect(addPart)
 workspace.DescendantRemoving:Connect(removePart)
 
--- Main ring effect loop
+-- 主环绕效果循环
 RunService.Heartbeat:Connect(function()
     if not ringPartsEnabled then return end
-    
+
     local humanoidRootPart = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if humanoidRootPart then
         local tornadoCenter = humanoidRootPart.Position
-        local actualRadius = ringRadius * 10  -- Convert 0-100 scale to 0-1000
-        local actualSpeed = rotationSpeed * 0.1  -- Convert 0-100 scale to 0-10
-        
+        local actualRadius = ringRadius * 10  -- 将0-100比例转换为0-1000
+        local actualSpeed = rotationSpeed * 0.1  -- 将0-100比例转换为0-10
+
         for _, part in pairs(parts) do
             if part.Parent and not part.Anchored then
                 local pos = part.Position
                 local distance = (Vector3.new(pos.X, tornadoCenter.Y, pos.Z) - tornadoCenter).Magnitude
                 local angle = math.atan2(pos.Z - tornadoCenter.Z, pos.X - tornadoCenter.X)
                 local newAngle = angle + math.rad(actualSpeed)
-                
+
                 local targetPos = Vector3.new(
                     tornadoCenter.X + math.cos(newAngle) * math.min(actualRadius, distance),
                     tornadoCenter.Y + (height * (math.abs(math.sin((pos.Y - tornadoCenter.Y) / height)))),
                     tornadoCenter.Z + math.sin(newAngle) * math.min(actualRadius, distance)
                 )
-                
+
                 local directionToTarget = (targetPos - part.Position).unit
                 part.Velocity = directionToTarget * attractionStrength
             end
@@ -358,73 +379,76 @@ end
 -- 滑块交互逻辑
 local function setupSlider(slider, knob, fill, updateFunction)
     local dragging = false
-    
+
     local function updateSlider(input)
         local sliderAbsolutePosition = slider.AbsolutePosition.X
         local sliderAbsoluteSize = slider.AbsoluteSize.X
         local mouseX = input.Position.X
-        
+
         local relativeX = math.clamp(mouseX - sliderAbsolutePosition, 0, sliderAbsoluteSize)
         local percentage = relativeX / sliderAbsoluteSize
-        
+
         updateFunction(math.floor(percentage * 100))
     end
-    
+
     knob.MouseButton1Down:Connect(function()
         dragging = true
     end)
-    
+
     UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             dragging = false
         end
     end)
-    
+
     UserInputService.InputChanged:Connect(function(input)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             updateSlider(input)
         end
     end)
-    
+
     slider.MouseButton1Down:Connect(function(input)
         updateSlider(input)
         dragging = true
     end)
 end
 
--- 加载滑块
+-- 设置滑块
 setupSlider(SpeedSlider, SpeedKnob, SpeedFill, updateSpeedSlider)
 setupSlider(SizeSlider, SizeKnob, SizeFill, updateSizeSlider)
 
--- 还是滑块初始化
+-- 初始化滑块值
 updateSpeedSlider(50)
 updateSizeSlider(50)
 
 -- 按钮切换功能
 ToggleButton.MouseButton1Click:Connect(function()
     ringPartsEnabled = not ringPartsEnabled
-    
+
     if ringPartsEnabled then
-        ToggleButton.Text = "环绕系统: 开启"
+        ToggleButton.Text = "魂环: 开启"
         ToggleButton.TextColor3 = Color3.fromRGB(50, 255, 50)
-        
-        -- GUI特效
+
+        -- 启用时的发光效果
         local enabledGlow = Instance.new("UIStroke")
         enabledGlow.Color = Color3.fromRGB(0, 255, 0)
         enabledGlow.Thickness = 3
         enabledGlow.Transparency = 0.5
         enabledGlow.Parent = ToggleButton
-        
-        -- Remove glow after animation
+
+        -- 1秒后移除发光效果
         delay(1, function()
             if enabledGlow then
                 enabledGlow:Destroy()
             end
         end)
     else
-        ToggleButton.Text = "环绕系统: 关闭"
+        ToggleButton.Text = "魂环: 关闭"
         ToggleButton.TextColor3 = Color3.fromRGB(255, 50, 50)
     end
+    
+    playSound("12221967")
+end) -- 这里添加了缺失的 end
 
 -- 最小化功能
 local minimized = false
@@ -439,8 +463,10 @@ MinimizeButton.MouseButton1Click:Connect(function()
         MinimizeButton.Text = "-"
         ControlsContainer.Visible = true
     end
-    
--- GUI界面
+    playSound("12221967")
+end) -- 这里添加了缺失的 end
+
+-- GUI拖动功能
 local dragging
 local dragInput
 local dragStart
@@ -456,7 +482,7 @@ Header.InputBegan:Connect(function(input)
         dragging = true
         dragStart = input.Position
         startPos = MainContainer.Position
-        
+
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 dragging = false
@@ -476,3 +502,6 @@ UserInputService.InputChanged:Connect(function(input)
         update(input)
     end
 end)
+
+-- 播放初始音效
+playSound("2865227271")
