@@ -2,29 +2,14 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local SoundService = game:GetService("SoundService")
-local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
 -- 自定义 delay 函数
 local function delay(time, callback)
-    local start = tick()
-    local connection
-    connection = RunService.Heartbeat:Connect(function()
-        if tick() - start >= time then
-            connection:Disconnect()
-            callback()
-        end
+    spawn(function()
+        wait(time)
+        callback()
     end)
-end
-
--- 自定义 table.find 函数
-local function tableFind(t, value)
-    for i, v in ipairs(t) do
-        if v == value then
-            return i
-        end
-    end
-    return nil
 end
 
 -- 音效函数
@@ -299,16 +284,25 @@ end
 
 local function addPart(part)
     if RetainPart(part) then
-        if not tableFind(parts, part) then
+        local found = false
+        for _, p in ipairs(parts) do
+            if p == part then
+                found = true
+                break
+            end
+        end
+        if not found then
             table.insert(parts, part)
         end
     end
 end
 
 local function removePart(part)
-    local index = tableFind(parts, part)
-    if index then
-        table.remove(parts, index)
+    for i, p in ipairs(parts) do
+        if p == part then
+            table.remove(parts, i)
+            break
+        end
     end
 end
 
