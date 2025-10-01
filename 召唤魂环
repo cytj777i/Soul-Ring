@@ -8,15 +8,16 @@ local Workspace = game:GetService("Workspace")
 local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 
--- 创建控制锚点（这是关键）
+-- 创建控制锚点
 local Folder = Instance.new("Folder", Workspace)
 local AnchorPart = Instance.new("Part", Folder)
 local Attachment1 = Instance.new("Attachment", AnchorPart)
 AnchorPart.Anchored = true
 AnchorPart.CanCollide = false
 AnchorPart.Transparency = 1
+AnchorPart.Size = Vector3.new(1, 1, 1)
 
--- 网络控制逻辑（从可工作脚本复制）
+-- 网络控制逻辑
 if not getgenv().Network then
     getgenv().Network = {
         BaseParts = {},
@@ -45,7 +46,7 @@ if not getgenv().Network then
     EnablePartControl()
 end
 
--- 强制控制部件函数（从可工作脚本复制）
+-- 强制控制部件函数 - 修改为返回控制对象
 local function ForcePart(v)
     if v:IsA("Part") and not v.Anchored and not v.Parent:FindFirstChild("Humanoid") and not v.Parent:FindFirstChild("Head") and v.Name ~= "Handle" then
         -- 清除现有的物理控制
@@ -63,30 +64,30 @@ local function ForcePart(v)
         if v:FindFirstChild("Torque") then
             v:FindFirstChild("Torque"):Destroy()
         end
-        
+
         v.CanCollide = false
-        
-        -- 添加扭矩控制旋转（关键部分）
+
+        -- 添加扭矩控制旋转
         local Torque = Instance.new("Torque", v)
         Torque.Torque = Vector3.new(100000, 100000, 100000)
-        
-        -- 添加位置对齐控制（关键部分）
+
+        -- 添加位置对齐控制
         local AlignPosition = Instance.new("AlignPosition", v)
         local Attachment2 = Instance.new("Attachment", v)
-        
+
         Torque.Attachment0 = Attachment2
         AlignPosition.MaxForce = 999999999
         AlignPosition.MaxVelocity = math.huge
         AlignPosition.Responsiveness = 200
         AlignPosition.Attachment0 = Attachment2
         AlignPosition.Attachment1 = Attachment1
-        
-        return true
+
+        return true, Torque, AlignPosition, Attachment2
     end
     return false
 end
 
--- GUI界面（你的原始GUI代码）
+-- GUI界面
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "DarkRingControl"
 ScreenGui.ResetOnSpawn = false
@@ -273,7 +274,7 @@ MinimizeCorner.Parent = MinimizeButton
 local ringPartsEnabled = false
 local rotationSpeed = 50
 local ringRadius = 50
-local controlledParts = {}
+local controlledParts = {} -- 现在存储控制对象：{part = {Torque, AlignPosition, Attachment}}
 
 -- 更新锚点位置函数
 local function updateAnchorPosition()
@@ -282,29 +283,70 @@ local function updateAnchorPosition()
         -- 让锚点跟随玩家但保持一定距离，形成环绕效果
         local center = humanoidRootPart.Position
         local time = tick()
-        
+
         -- 计算锚点的环绕位置
         local orbitX = center.X + math.cos(time * rotationSpeed * 0.1) * ringRadius
         local orbitZ = center.Z + math.sin(time * rotationSpeed * 0.1) * ringRadius
-        
+
         AnchorPart.Position = Vector3.new(orbitX, center.Y + 2, orbitZ)
     end
 end
 
--- 控制部件函数
+-- 控制部件函数 - 修改为存储控制对象
 local function controlPart(part)
-    if ForcePart(part) then
-        controlledParts[part] = true
+    local success, torque, alignPos, attachment = ForcePart(part)
+    if success then
+        controlledParts[part] = {
+            Torque = torque,
+            AlignPosition = alignPos,
+            Attachment = attachment
+        }
         Network.RetainPart(part)
         return true
     end
     return false
 end
 
+-- 清理部件控制函数（新增的关键函数）
+local function cleanupPartControl(part)
+    if controlledParts[part] then
+        -- 移除所有添加的物理控制
+        local controls = controlledParts[part]
+        if controls.Torque and controls.Torque.Parent then
+            controls.Torque:Destroy()
+        end
+        if controls.AlignPosition and controls.AlignPosition.Parent then
+            controls.AlignPosition:Destroy()
+        end
+        if controls.Attachment and controls.Attachment.Parent then
+            controls.Attachment:Destroy()
+        end
+        
+        -- 恢复部件的原始属性
+        part.CanCollide = true
+        part.CustomPhysicalProperties = nil
+        
+        -- 从网络控制中移除
+        local index = table.find(Network.BaseParts, part)
+        if index then
+            table.remove(Network.BaseParts, index)
+        end
+        
+        controlledParts[part] = nil
+    end
+end
+
+-- 清理所有控制（新增的关键函数）
+local function cleanupAllControls()
+    for part, _ in pairs(controlledParts) do
+        cleanupPartControl(part)
+    end
+end
+
 -- 初始化控制部件
 local function initializeParts()
     for _, part in pairs(Workspace:GetDescendants()) do
-        if part:IsA("Part") and not part.Anchored and not part.Parent:FindFirstChild("Humanoid") and not part.Parent:FindFirstChild("Head") and part.Name ~= "Handle" then
+        if part:IsA("Part") and not part.Anchored and not controlledParts[part] and not part.Parent:FindFirstChild("Humanoid") and not part.Parent:FindFirstChild("Head") and part.Name ~= "Handle" then
             controlPart(part)
         end
     end
@@ -313,10 +355,10 @@ end
 -- 主循环
 RunService.Heartbeat:Connect(function()
     if not ringPartsEnabled then return end
-    
+
     -- 更新锚点位置
     updateAnchorPosition()
-    
+
     -- 持续控制新出现的部件
     for _, part in pairs(Workspace:GetDescendants()) do
         if part:IsA("Part") and not part.Anchored and not controlledParts[part] and not part.Parent:FindFirstChild("Humanoid") and not part.Parent:FindFirstChild("Head") and part.Name ~= "Handle" then
@@ -330,14 +372,12 @@ ToggleButton.MouseButton1Click:Connect(function()
     ringPartsEnabled = not ringPartsEnabled
     ToggleButton.Text = ringPartsEnabled and "环绕: 开启" or "环绕: 关闭"
     ToggleButton.BackgroundColor3 = ringPartsEnabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
-    
+
     if ringPartsEnabled then
         initializeParts()
     else
-        -- 关闭时清理
-        for part, _ in pairs(controlledParts) do
-            controlledParts[part] = nil
-        end
+        -- 关闭时彻底清理所有控制
+        cleanupAllControls()
     end
 end)
 
@@ -414,7 +454,7 @@ MainFrame.InputBegan:Connect(function(input)
         dragging = true
         dragStart = input.Position
         startPos = MainFrame.Position
-        
+
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 dragging = false
@@ -435,5 +475,10 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- 初始化
-initializeParts()
+-- 角色重新生成时重新初始化
+LocalPlayer.CharacterAdded:Connect(function(character)
+    character:WaitForChild("HumanoidRootPart")
+    if ringPartsEnabled then
+        initializeParts()
+    end
+end)
