@@ -124,7 +124,7 @@ TitleCorner.Parent = Title
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Size = UDim2.new(0.8, 0, 0, 45)
 ToggleButton.Position = UDim2.new(0.1, 0, 0.2, 0)
-ToggleButton.Text = "魂环: 关闭"
+ToggleButton.Text = "环绕: 关闭"
 ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleButton.Font = Enum.Font.GothamBold
@@ -269,7 +269,7 @@ local MinimizeCorner = Instance.new("UICorner")
 MinimizeCorner.CornerRadius = UDim.new(0, 12)
 MinimizeCorner.Parent = MinimizeButton
 
--- 魂环控制变量
+-- 环绕控制变量
 local ringPartsEnabled = false
 local rotationSpeed = 50
 local ringRadius = 50
@@ -328,7 +328,7 @@ end)
 -- 按钮功能
 ToggleButton.MouseButton1Click:Connect(function()
     ringPartsEnabled = not ringPartsEnabled
-    ToggleButton.Text = ringPartsEnabled and "魂环: 开启" or "魂环: 关闭"
+    ToggleButton.Text = ringPartsEnabled and "环绕: 开启" or "环绕: 关闭"
     ToggleButton.BackgroundColor3 = ringPartsEnabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
     
     if ringPartsEnabled then
