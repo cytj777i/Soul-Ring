@@ -190,7 +190,8 @@ MinimizeCorner.Parent = MinimizeButton
 local ringPartsEnabled = false
 local rotationSpeed = 50
 local ringRadius = 50
-local attractionStrength = 1000 -- 吸引力强度
+local attractionStrength = 50 -- 降低吸引力强度，防止崩飞
+local maxDistance = 200 -- 最大吸引距离
 
 local parts = {}
 
@@ -202,8 +203,8 @@ local function shouldRetainPart(part)
         if part.Parent == LocalPlayer.Character or part:IsDescendantOf(LocalPlayer.Character) then
             return false
         end
-        -- 移除了 Part.CanCollide = false 的设置，允许物体与环境碰撞
-        part.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0) -- 设置质量等物理属性
+        -- 移除物理属性修改，使用默认物理属性
+        -- part.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0) -- 注释掉这行
         return true
     end
     return false
@@ -248,16 +249,20 @@ RunService.Heartbeat:Connect(function()
     if humanoidRootPart then
         local center = humanoidRootPart.Position
         local actualRadius = ringRadius * 5 -- 环绕半径倍数
-        local actualSpeed = rotationSpeed * 0.01 -- 旋转速度系数
+        local actualSpeed = rotationSpeed * 0.02 -- 增加旋转速度系数
         
         for _, part in pairs(parts) do
             if part.Parent and not part.Anchored then
                 local pos = part.Position
-                -- 计算物体在XZ平面上到玩家的向量和距离
-                local toPart = Vector3.new(pos.X - center.X, 0, pos.Z - center.Z)
-                local distance = toPart.Magnitude
+                -- 计算物体到玩家的距离
+                local distance = (pos - center).Magnitude
                 
-                if distance > 0.1 then -- 避免除以零
+                -- 只吸引在最大距离内的物体
+                if distance <= maxDistance and distance > 0.1 then
+                    -- 计算物体在XZ平面上到玩家的向量和距离
+                    local toPart = Vector3.new(pos.X - center.X, 0, pos.Z - center.Z)
+                    local horizontalDistance = toPart.Magnitude
+                    
                     -- 计算当前角度并增加旋转
                     local currentAngle = math.atan2(toPart.Z, toPart.X)
                     local newAngle = currentAngle + actualSpeed
@@ -265,14 +270,23 @@ RunService.Heartbeat:Connect(function()
                     -- 计算目标位置（在XZ平面上形成一个环）
                     local targetPos = Vector3.new(
                         center.X + math.cos(newAngle) * actualRadius,
-                        center.Y, -- 保持与玩家相同的高度，可以根据需要调整
+                        center.Y + 2, -- 稍微提高高度，避免与地面碰撞
                         center.Z + math.sin(newAngle) * actualRadius
                     )
                     
                     -- 计算指向目标位置的方向向量
                     local direction = (targetPos - part.Position)
-                    -- 应用力，使物体向目标位置移动
-                    part.Velocity = direction.Unit * attractionStrength
+                    local distanceToTarget = direction.Magnitude
+                    
+                    -- 根据距离调整力的大小，距离越近力越小
+                    local forceMultiplier = math.min(1, distanceToTarget / 10)
+                    
+                    -- 应用平滑的力，使物体向目标位置移动
+                    local currentVelocity = part.Velocity
+                    local targetVelocity = direction.Unit * attractionStrength  * forceMultiplier
+                    
+                    -- 使用线性插值平滑速度变化
+                    part.Velocity = currentVelocity:Lerp(targetVelocity, 0.1)
                 end
             end
         end
