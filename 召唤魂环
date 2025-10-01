@@ -2,15 +2,8 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local SoundService = game:GetService("SoundService")
+local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
-
--- 自定义 delay 函数
-local function delay(time, callback)
-    spawn(function()
-        wait(time)
-        callback()
-    end)
-end
 
 -- 音效函数
 local function playSound(soundId)
@@ -29,247 +22,193 @@ ScreenGui.Name = "DarkRingControl"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- 主容器
-local MainContainer = Instance.new("Frame")
-MainContainer.Size = UDim2.new(0, 350, 0, 450)
-MainContainer.Position = UDim2.new(0.5, -175, 0.5, -225)
-MainContainer.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
-MainContainer.BorderSizePixel = 0
-MainContainer.Parent = ScreenGui
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 350, 0, 300)
+MainFrame.Position = UDim2.new(0.5, -175, 0.5, -150)
+MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
 
--- 发光边框
-local BorderGlow = Instance.new("UIStroke")
-BorderGlow.Color = Color3.fromRGB(0, 150, 255)
-BorderGlow.Thickness = 3
-BorderGlow.Transparency = 0.3
-BorderGlow.Parent = MainContainer
-
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 12)
-MainCorner.Parent = MainContainer
-
--- 标题栏
-local Header = Instance.new("Frame")
-Header.Size = UDim2.new(1, 0, 0, 60)
-Header.Position = UDim2.new(0, 0, 0, 0)
-Header.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
-Header.BorderSizePixel = 0
-Header.Parent = MainContainer
-
-local HeaderCorner = Instance.new("UICorner")
-HeaderCorner.CornerRadius = UDim.new(0, 12)
-HeaderCorner.Parent = Header
-
-local HeaderGradient = Instance.new("UIGradient")
-HeaderGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 100, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 200, 255))
-})
-HeaderGradient.Rotation = 45
-HeaderGradient.Parent = Header
+-- 圆角
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 20)
+UICorner.Parent = MainFrame
 
 -- 标题
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, -20, 1, 0)
-Title.Position = UDim2.new(0, 10, 0, 0)
-Title.Text = "开始召唤魂环"
+Title.Size = UDim2.new(1, 0, 0, 50)
+Title.Position = UDim2.new(0, 0, 0, 0)
+Title.Text = "成为封号斗罗脚本"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.BackgroundTransparency = 1
+Title.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
 Title.Font = Enum.Font.GothamBold
-Title.TextSize = 18
-Title.TextXAlignment = Enum.TextXAlignment.Left
-Title.Parent = Header
+Title.TextSize = 20
+Title.Parent = MainFrame
 
-local SubTitle = Instance.new("TextLabel")
-SubTitle.Size = UDim2.new(1, -20, 0, 20)
-SubTitle.Position = UDim2.new(0, 10, 0, 35)
-SubTitle.Text = "魂环控制系统"
-SubTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
-SubTitle.BackgroundTransparency = 1
-SubTitle.Font = Enum.Font.Gotham
-SubTitle.TextSize = 12
-SubTitle.TextXAlignment = Enum.TextXAlignment.Left
-SubTitle.Parent = Header
-
--- 控制容器
-local ControlsContainer = Instance.new("Frame")
-ControlsContainer.Size = UDim2.new(1, -20, 1, -80)
-ControlsContainer.Position = UDim2.new(0, 10, 0, 70)
-ControlsContainer.BackgroundTransparency = 1
-ControlsContainer.Parent = MainContainer
+-- 标题圆角
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 20)
+TitleCorner.Parent = Title
 
 -- 主开关按钮
 local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(1, 0, 0, 50)
-ToggleButton.Position = UDim2.new(0, 0, 0, 0)
+ToggleButton.Size = UDim2.new(0.8, 0, 0, 45)
+ToggleButton.Position = UDim2.new(0.1, 0, 0.2, 0)
 ToggleButton.Text = "魂环: 关闭"
-ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-ToggleButton.TextColor3 = Color3.fromRGB(255, 50, 50)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleButton.Font = Enum.Font.GothamBold
 ToggleButton.TextSize = 16
-ToggleButton.Parent = ControlsContainer
+ToggleButton.Parent = MainFrame
 
 local ToggleCorner = Instance.new("UICorner")
-ToggleCorner.CornerRadius = UDim.new(0, 8)
+ToggleCorner.CornerRadius = UDim.new(0, 10)
 ToggleCorner.Parent = ToggleButton
 
-local ToggleStroke = Instance.new("UIStroke")
-ToggleStroke.Color = Color3.fromRGB(50, 50, 60)
-ToggleStroke.Thickness = 2
-ToggleStroke.Parent = ToggleButton
-
 -- 速度控制
-local SpeedSection = Instance.new("Frame")
-SpeedSection.Size = UDim2.new(1, 0, 0, 100)
-SpeedSection.Position = UDim2.new(0, 0, 0, 70)
-SpeedSection.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-SpeedSection.Parent = ControlsContainer
-
-local SpeedCorner = Instance.new("UICorner")
-SpeedCorner.CornerRadius = UDim.new(0, 8)
-SpeedCorner.Parent = SpeedSection
-
-local SpeedStroke = Instance.new("UIStroke")
-SpeedStroke.Color = Color3.fromRGB(50, 50, 60)
-SpeedStroke.Thickness = 2
-SpeedStroke.Parent = SpeedSection
-
 local SpeedLabel = Instance.new("TextLabel")
-SpeedLabel.Size = UDim2.new(1, -20, 0, 25)
-SpeedLabel.Position = UDim2.new(0, 10, 0, 5)
+SpeedLabel.Size = UDim2.new(0.8, 0, 0, 25)
+SpeedLabel.Position = UDim2.new(0.1, 0, 0.45, 0)
 SpeedLabel.Text = "旋转速度: 50"
-SpeedLabel.TextColor3 = Color3.fromRGB(0, 200, 255)
+SpeedLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
 SpeedLabel.BackgroundTransparency = 1
 SpeedLabel.Font = Enum.Font.Gotham
 SpeedLabel.TextSize = 14
 SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
-SpeedLabel.Parent = SpeedSection
+SpeedLabel.Parent = MainFrame
 
--- 速度调整滑块
-local SpeedSlider = Instance.new("Frame")
-SpeedSlider.Size = UDim2.new(1, -20, 0, 30)
-SpeedSlider.Position = UDim2.new(0, 10, 0, 35)
-SpeedSlider.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-SpeedSlider.Parent = SpeedSection
+local DecreaseSpeed = Instance.new("TextButton")
+DecreaseSpeed.Size = UDim2.new(0.15, 0, 0, 30)
+DecreaseSpeed.Position = UDim2.new(0.1, 0, 0.55, 0)
+DecreaseSpeed.Text = "-"
+DecreaseSpeed.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+DecreaseSpeed.TextColor3 = Color3.fromRGB(255, 255, 255)
+DecreaseSpeed.Font = Enum.Font.GothamBold
+DecreaseSpeed.TextSize = 18
+DecreaseSpeed.Parent = MainFrame
 
-local SpeedSliderCorner = Instance.new("UICorner")
-SpeedSliderCorner.CornerRadius = UDim.new(0, 15)
-SpeedSliderCorner.Parent = SpeedSlider
+local DecreaseCorner = Instance.new("UICorner")
+DecreaseCorner.CornerRadius = UDim.new(0, 8)
+DecreaseCorner.Parent = DecreaseSpeed
 
-local SpeedFill = Instance.new("Frame")
-SpeedFill.Size = UDim2.new(0.5, 0, 1, 0)
-SpeedFill.Position = UDim2.new(0, 0, 0, 0)
-SpeedFill.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
-SpeedFill.Parent = SpeedSlider
+local IncreaseSpeed = Instance.new("TextButton")
+IncreaseSpeed.Size = UDim2.new(0.15, 0, 0, 30)
+IncreaseSpeed.Position = UDim2.new(0.75, 0, 0.55, 0)
+IncreaseSpeed.Text = "+"
+IncreaseSpeed.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+IncreaseSpeed.TextColor3 = Color3.fromRGB(255, 255, 255)
+IncreaseSpeed.Font = Enum.Font.GothamBold
+IncreaseSpeed.TextSize = 18
+IncreaseSpeed.Parent = MainFrame
 
-local SpeedFillCorner = Instance.new("UICorner")
-SpeedFillCorner.CornerRadius = UDim.new(0, 15)
-SpeedFillCorner.Parent = SpeedFill
+local IncreaseCorner = Instance.new("UICorner")
+IncreaseCorner.CornerRadius = UDim.new(0, 8)
+IncreaseCorner.Parent = IncreaseSpeed
 
-local SpeedKnob = Instance.new("TextButton")
-SpeedKnob.Size = UDim2.new(0, 20, 0, 20)
-SpeedKnob.Position = UDim2.new(0.5, -10, 0.5, -10)
-SpeedKnob.Text = ""
-SpeedKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-SpeedKnob.Parent = SpeedSlider
+local SpeedDisplay = Instance.new("TextLabel")
+SpeedDisplay.Size = UDim2.new(0.5, 0, 0, 30)
+SpeedDisplay.Position = UDim2.new(0.3, 0, 0.55, 0)
+SpeedDisplay.Text = "50"
+SpeedDisplay.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+SpeedDisplay.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedDisplay.Font = Enum.Font.Gotham
+SpeedDisplay.TextSize = 16
+SpeedDisplay.Parent = MainFrame
 
-local SpeedKnobCorner = Instance.new("UICorner")
-SpeedKnobCorner.CornerRadius = UDim.new(1, 0)
-SpeedKnobCorner.Parent = SpeedKnob
+local SpeedDisplayCorner = Instance.new("UICorner")
+SpeedDisplayCorner.CornerRadius = UDim.new(0, 8)
+SpeedDisplayCorner.Parent = SpeedDisplay
 
--- 魂环大小控制
-local SizeSection = Instance.new("Frame")
-SizeSection.Size = UDim2.new(1, 0, 0, 100)
-SizeSection.Position = UDim2.new(0, 0, 0, 185)
-SizeSection.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-SizeSection.Parent = ControlsContainer
+-- 半径控制
+local RadiusLabel = Instance.new("TextLabel")
+RadiusLabel.Size = UDim2.new(0.8, 0, 0, 25)
+RadiusLabel.Position = UDim2.new(0.1, 0, 0.7, 0)
+RadiusLabel.Text = "环绕半径: 50"
+RadiusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+RadiusLabel.BackgroundTransparency = 1
+RadiusLabel.Font = Enum.Font.Gotham
+RadiusLabel.TextSize = 14
+RadiusLabel.TextXAlignment = Enum.TextXAlignment.Left
+RadiusLabel.Parent = MainFrame
 
-local SizeCorner = Instance.new("UICorner")
-SizeCorner.CornerRadius = UDim.new(0, 8)
-SizeCorner.Parent = SizeSection
+local DecreaseRadius = Instance.new("TextButton")
+DecreaseRadius.Size = UDim2.new(0.15, 0, 0, 30)
+DecreaseRadius.Position = UDim2.new(0.1, 0, 0.8, 0)
+DecreaseRadius.Text = "-"
+DecreaseRadius.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+DecreaseRadius.TextColor3 = Color3.fromRGB(255, 255, 255)
+DecreaseRadius.Font = Enum.Font.GothamBold
+DecreaseRadius.TextSize = 18
+DecreaseRadius.Parent = MainFrame
 
-local SizeStroke = Instance.new("UIStroke")
-SizeStroke.Color = Color3.fromRGB(50, 50, 60)
-SizeStroke.Thickness = 2
-SizeStroke.Parent = SizeSection
+local DecreaseRadiusCorner = Instance.new("UICorner")
+DecreaseRadiusCorner.CornerRadius = UDim.new(0, 8)
+DecreaseRadiusCorner.Parent = DecreaseRadius
 
-local SizeLabel = Instance.new("TextLabel")
-SizeLabel.Size = UDim2.new(1, -20, 0, 25)
-SizeLabel.Position = UDim2.new(0, 10, 0, 5)
-SizeLabel.Text = "环绕半径: 50"
-SizeLabel.TextColor3 = Color3.fromRGB(0, 200, 255)
-SizeLabel.BackgroundTransparency = 1
-SizeLabel.Font = Enum.Font.Gotham
-SizeLabel.TextSize = 14
-SizeLabel.TextXAlignment = Enum.TextXAlignment.Left
-SizeLabel.Parent = SizeSection
+local IncreaseRadius = Instance.new("TextButton")
+IncreaseRadius.Size = UDim2.new(0.15, 0, 0, 30)
+IncreaseRadius.Position = UDim2.new(0.75, 0, 0.8, 0)
+IncreaseRadius.Text = "+"
+IncreaseRadius.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+IncreaseRadius.TextColor3 = Color3.fromRGB(255, 255, 255)
+IncreaseRadius.Font = Enum.Font.GothamBold
+IncreaseRadius.TextSize = 18
+IncreaseRadius.Parent = MainFrame
 
-local SizeSlider = Instance.new("Frame")
-SizeSlider.Size = UDim2.new(1, -20, 0, 30)
-SizeSlider.Position = UDim2.new(0, 10, 0, 35)
-SizeSlider.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-SizeSlider.Parent = SizeSection
+local IncreaseRadiusCorner = Instance.new("UICorner")
+IncreaseRadiusCorner.CornerRadius = UDim.new(0, 8)
+IncreaseRadiusCorner.Parent = IncreaseRadius
 
-local SizeSliderCorner = Instance.new("UICorner")
-SizeSliderCorner.CornerRadius = UDim.new(0, 15)
-SizeSliderCorner.Parent = SizeSlider
+local RadiusDisplay = Instance.new("TextLabel")
+RadiusDisplay.Size = UDim2.new(0.5, 0, 0, 30)
+RadiusDisplay.Position = UDim2.new(0.3, 0, 0.8, 0)
+RadiusDisplay.Text = "50"
+RadiusDisplay.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+RadiusDisplay.TextColor3 = Color3.fromRGB(255, 255, 255)
+RadiusDisplay.Font = Enum.Font.Gotham
+RadiusDisplay.TextSize = 16
+RadiusDisplay.Parent = MainFrame
 
-local SizeFill = Instance.new("Frame")
-SizeFill.Size = UDim2.new(0.5, 0, 1, 0)
-SizeFill.Position = UDim2.new(0, 0, 0, 0)
-SizeFill.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
-SizeFill.Parent = SizeSlider
+local RadiusDisplayCorner = Instance.new("UICorner")
+RadiusDisplayCorner.CornerRadius = UDim.new(0, 8)
+RadiusDisplayCorner.Parent = RadiusDisplay
 
-local SizeFillCorner = Instance.new("UICorner")
-SizeFillCorner.CornerRadius = UDim.new(0, 15)
-SizeFillCorner.Parent = SizeFill
-
-local SizeKnob = Instance.new("TextButton")
-SizeKnob.Size = UDim2.new(0, 20, 0, 20)
-SizeKnob.Position = UDim2.new(0.5, -10, 0.5, -10)
-SizeKnob.Text = ""
-SizeKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-SizeKnob.Parent = SizeSlider
-
-local SizeKnobCorner = Instance.new("UICorner")
-SizeKnobCorner.CornerRadius = UDim.new(1, 0)
-SizeKnobCorner.Parent = SizeKnob
+-- 水印
+local Watermark = Instance.new("TextLabel")
+Watermark.Size = UDim2.new(1, 0, 0, 20)
+Watermark.Position = UDim2.new(0, 0, 1, -20)
+Watermark.Text = "成为封号斗罗脚本-作者XTTT"
+Watermark.TextColor3 = Color3.fromRGB(100, 100, 120)
+Watermark.BackgroundTransparency = 1
+Watermark.Font = Enum.Font.Gotham
+Watermark.TextSize = 12
+Watermark.Parent = MainFrame
 
 -- 最小化按钮
 local MinimizeButton = Instance.new("TextButton")
-MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
-MinimizeButton.Position = UDim2.new(1, -35, 0, 15)
+MinimizeButton.Size = UDim2.new(0, 25, 0, 25)
+MinimizeButton.Position = UDim2.new(1, -30, 0, 10)
 MinimizeButton.Text = "-"
-MinimizeButton.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
 MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 MinimizeButton.Font = Enum.Font.GothamBold
 MinimizeButton.TextSize = 18
-MinimizeButton.Parent = Header
+MinimizeButton.Parent = MainFrame
 
 local MinimizeCorner = Instance.new("UICorner")
-MinimizeCorner.CornerRadius = UDim.new(1, 0)
+MinimizeCorner.CornerRadius = UDim.new(0, 12)
 MinimizeCorner.Parent = MinimizeButton
-
--- 页脚
-local Footer = Instance.new("TextLabel")
-Footer.Size = UDim2.new(1, 0, 0, 30)
-Footer.Position = UDim2.new(0, 0, 1, -30)
-Footer.Text = "成为封号斗罗脚本-作者XTTT"
-Footer.TextColor3 = Color3.fromRGB(100, 100, 120)
-Footer.BackgroundTransparency = 1
-Footer.Font = Enum.Font.Gotham
-Footer.TextSize = 12
-Footer.Parent = ControlsContainer
 
 -- 魂环控制变量
 local ringPartsEnabled = false
-local rotationSpeed = 50  -- 0-100 scale
-local ringRadius = 50     -- 0-100 scale
+local rotationSpeed = 50
+local ringRadius = 50
 local height = 100
 local attractionStrength = 1000
 
 local parts = {}
 
+-- 环绕逻辑（基于可运行脚本的简化版本）
 local function RetainPart(Part)
     if Part:IsA("BasePart") and not Part.Anchored and Part:IsDescendantOf(workspace) then
         if Part.Parent == LocalPlayer.Character or Part:IsDescendantOf(LocalPlayer.Character) then
@@ -317,26 +256,26 @@ workspace.DescendantRemoving:Connect(removePart)
 -- 主环绕效果循环
 RunService.Heartbeat:Connect(function()
     if not ringPartsEnabled then return end
-
+    
     local humanoidRootPart = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if humanoidRootPart then
         local tornadoCenter = humanoidRootPart.Position
-        local actualRadius = ringRadius * 10  -- 将0-100比例转换为0-1000
-        local actualSpeed = rotationSpeed * 0.1  -- 将0-100比例转换为0-10
-
+        local actualRadius = ringRadius * 10
+        local actualSpeed = rotationSpeed * 0.1
+        
         for _, part in pairs(parts) do
             if part.Parent and not part.Anchored then
                 local pos = part.Position
                 local distance = (Vector3.new(pos.X, tornadoCenter.Y, pos.Z) - tornadoCenter).Magnitude
                 local angle = math.atan2(pos.Z - tornadoCenter.Z, pos.X - tornadoCenter.X)
                 local newAngle = angle + math.rad(actualSpeed)
-
+                
                 local targetPos = Vector3.new(
                     tornadoCenter.X + math.cos(newAngle) * math.min(actualRadius, distance),
                     tornadoCenter.Y + (height * (math.abs(math.sin((pos.Y - tornadoCenter.Y) / height)))),
                     tornadoCenter.Z + math.sin(newAngle) * math.min(actualRadius, distance)
                 )
-
+                
                 local directionToTarget = (targetPos - part.Position).unit
                 part.Velocity = directionToTarget * attractionStrength
             end
@@ -344,92 +283,39 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- 滑块控制函数
-local function updateSpeedSlider(value)
-    rotationSpeed = math.clamp(value, 0, 100)
-    SpeedLabel.Text = "旋转速度: " .. rotationSpeed
-    SpeedFill.Size = UDim2.new(rotationSpeed / 100, 0, 1, 0)
-    SpeedKnob.Position = UDim2.new(rotationSpeed / 100, -10, 0.5, -10)
-end
-
-local function updateSizeSlider(value)
-    ringRadius = math.clamp(value, 0, 100)
-    SizeLabel.Text = "环绕半径: " .. ringRadius
-    SizeFill.Size = UDim2.new(ringRadius / 100, 0, 1, 0)
-    SizeKnob.Position = UDim2.new(ringRadius / 100, -10, 0.5, -10)
-end
-
--- 滑块交互逻辑
-local function setupSlider(slider, knob, fill, updateFunction)
-    local dragging = false
-
-    local function updateSlider(input)
-        local sliderAbsolutePosition = slider.AbsolutePosition.X
-        local sliderAbsoluteSize = slider.AbsoluteSize.X
-        local mouseX = input.Position.X
-
-        local relativeX = math.clamp(mouseX - sliderAbsolutePosition, 0, sliderAbsoluteSize)
-        local percentage = relativeX / sliderAbsoluteSize
-
-        updateFunction(math.floor(percentage * 100))
-    end
-
-    knob.MouseButton1Down:Connect(function()
-        dragging = true
-    end)
-
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = false
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            updateSlider(input)
-        end
-    end)
-
-    slider.MouseButton1Down:Connect(function(input)
-        updateSlider(input)
-        dragging = true
-    end)
-end
-
--- 设置滑块
-setupSlider(SpeedSlider, SpeedKnob, SpeedFill, updateSpeedSlider)
-setupSlider(SizeSlider, SizeKnob, SizeFill, updateSizeSlider)
-
--- 初始化滑块值
-updateSpeedSlider(50)
-updateSizeSlider(50)
-
--- 按钮切换功能
+-- 按钮功能
 ToggleButton.MouseButton1Click:Connect(function()
     ringPartsEnabled = not ringPartsEnabled
+    ToggleButton.Text = ringPartsEnabled and "魂环: 开启" or "魂环: 关闭"
+    ToggleButton.BackgroundColor3 = ringPartsEnabled and Color3.fromRGB(50, 200, 50) or Color3.fromRGB(200, 50, 50)
+    playSound("12221967")
+end)
 
-    if ringPartsEnabled then
-        ToggleButton.Text = "魂环: 开启"
-        ToggleButton.TextColor3 = Color3.fromRGB(50, 255, 50)
+DecreaseSpeed.MouseButton1Click:Connect(function()
+    rotationSpeed = math.max(1, rotationSpeed - 5)
+    SpeedDisplay.Text = rotationSpeed
+    SpeedLabel.Text = "旋转速度: " .. rotationSpeed
+    playSound("12221967")
+end)
 
-        -- 启用时的发光效果
-        local enabledGlow = Instance.new("UIStroke")
-        enabledGlow.Color = Color3.fromRGB(0, 255, 0)
-        enabledGlow.Thickness = 3
-        enabledGlow.Transparency = 0.5
-        enabledGlow.Parent = ToggleButton
+IncreaseSpeed.MouseButton1Click:Connect(function()
+    rotationSpeed = math.min(100, rotationSpeed + 5)
+    SpeedDisplay.Text = rotationSpeed
+    SpeedLabel.Text = "旋转速度: " .. rotationSpeed
+    playSound("12221967")
+end)
 
-        -- 1秒后移除发光效果
-        delay(1, function()
-            if enabledGlow then
-                enabledGlow:Destroy()
-            end
-        end)
-    else
-        ToggleButton.Text = "魂环: 关闭"
-        ToggleButton.TextColor3 = Color3.fromRGB(255, 50, 50)
-    end
-    
+DecreaseRadius.MouseButton1Click:Connect(function()
+    ringRadius = math.max(1, ringRadius - 5)
+    RadiusDisplay.Text = ringRadius
+    RadiusLabel.Text = "环绕半径: " .. ringRadius
+    playSound("12221967")
+end)
+
+IncreaseRadius.MouseButton1Click:Connect(function()
+    ringRadius = math.min(100, ringRadius + 5)
+    RadiusDisplay.Text = ringRadius
+    RadiusLabel.Text = "环绕半径: " .. ringRadius
     playSound("12221967")
 end)
 
@@ -438,13 +324,31 @@ local minimized = false
 MinimizeButton.MouseButton1Click:Connect(function()
     minimized = not minimized
     if minimized then
-        MainContainer:TweenSize(UDim2.new(0, 350, 0, 60), "Out", "Quad", 0.3, true)
+        MainFrame:TweenSize(UDim2.new(0, 350, 0, 50), "Out", "Quad", 0.3, true)
         MinimizeButton.Text = "+"
-        ControlsContainer.Visible = false
+        ToggleButton.Visible = false
+        SpeedLabel.Visible = false
+        DecreaseSpeed.Visible = false
+        IncreaseSpeed.Visible = false
+        SpeedDisplay.Visible = false
+        RadiusLabel.Visible = false
+        DecreaseRadius.Visible = false
+        IncreaseRadius.Visible = false
+        RadiusDisplay.Visible = false
+        Watermark.Visible = false
     else
-        MainContainer:TweenSize(UDim2.new(0, 350, 0, 450), "Out", "Quad", 0.3, true)
+        MainFrame:TweenSize(UDim2.new(0, 350, 0, 300), "Out", "Quad", 0.3, true)
         MinimizeButton.Text = "-"
-        ControlsContainer.Visible = true
+        ToggleButton.Visible = true
+        SpeedLabel.Visible = true
+        DecreaseSpeed.Visible = true
+        IncreaseSpeed.Visible = true
+        SpeedDisplay.Visible = true
+        RadiusLabel.Visible = true
+        DecreaseRadius.Visible = true
+        IncreaseRadius.Visible = true
+        RadiusDisplay.Visible = true
+        Watermark.Visible = true
     end
     playSound("12221967")
 end)
@@ -457,15 +361,15 @@ local startPos
 
 local function update(input)
     local delta = input.Position - dragStart
-    MainContainer.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 end
 
-Header.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
         dragStart = input.Position
-        startPos = MainContainer.Position
-
+        startPos = MainFrame.Position
+        
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 dragging = false
@@ -474,8 +378,8 @@ Header.InputBegan:Connect(function(input)
     end
 end)
 
-Header.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement then
+MainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
         dragInput = input
     end
 end)
