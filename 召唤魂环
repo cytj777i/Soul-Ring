@@ -198,7 +198,7 @@ RadiusDisplayCorner.Parent = RadiusDisplay
 local Watermark = Instance.new("TextLabel")
 Watermark.Size = UDim2.new(1, 0, 0, 20)
 Watermark.Position = UDim2.new(0, 0, 1, -20)
-Watermark.Text = "球状环绕脚本-作者XTTT"
+Watermark.Text = "球状环绕脚本-修复版"
 Watermark.TextColor3 = Color3.fromRGB(100, 100, 120)
 Watermark.BackgroundTransparency = 1
 Watermark.Font = Enum.Font.Gotham
@@ -226,7 +226,7 @@ local rotationSpeed = 50
 local ringRadius = 50
 local attractionStrength = 1000  -- 吸引力强度
 
--- 控制部件列表
+-- 控制部件列表 - 现在存储每个部件的角度信息
 local controlledParts = {}
 
 -- 添加部件到控制列表
@@ -240,8 +240,22 @@ local function addPartToControl(part)
         end
         
         part.CanCollide = false
-        controlledParts[part] = true
-        Network.RetainPart(part)
+        
+        -- 计算初始角度
+        local humanoidRootPart = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if humanoidRootPart then
+            local center = humanoidRootPart.Position
+            local pos = part.Position
+            local angle = math.atan2(pos.Z - center.Z, pos.X - center.X)
+            
+            controlledParts[part] = {
+                angle = angle,
+                height = math.random(0, 10)  -- 随机高度变化
+            }
+            
+            Network.RetainPart(part)
+        end
+        
         return true
     end
     return false
@@ -250,9 +264,20 @@ end
 -- 从控制列表移除部件
 local function removePartFromControl(part)
     if controlledParts[part] then
+        -- 停止部件的运动
+        if part and part.Parent then
+            part.Velocity = Vector3.new(0, 0, 0)
+            part.RotVelocity = Vector3.new(0, 0, 0)
+            part.CanCollide = true  -- 恢复碰撞
+            
+            -- 从网络控制中移除
+            local index = table.find(Network.BaseParts, part)
+            if index then
+                table.remove(Network.BaseParts, index)
+            end
+        end
+        
         controlledParts[part] = nil
-        -- 恢复碰撞（可选）
-        part.CanCollide = true
     end
 end
 
@@ -263,7 +288,7 @@ local function initializeParts()
     end
 end
 
--- 环绕计算函数（基于参考脚本的原理）
+-- 环绕计算函数（完全按照参考脚本的原理）
 local function updateRingParts()
     if not ringPartsEnabled then return end
     
@@ -271,24 +296,17 @@ local function updateRingParts()
     if not humanoidRootPart then return end
     
     local center = humanoidRootPart.Position
-    local time = tick()
     
-    for part, _ in pairs(controlledParts) do
+    for part, data in pairs(controlledParts) do
         if part and part.Parent and not part.Anchored then
-            local pos = part.Position
-            
-            -- 计算当前部件到中心的距离和角度
-            local distance = (Vector3.new(pos.X, center.Y, pos.Z) - center).Magnitude
-            local angle = math.atan2(pos.Z - center.Z, pos.X - center.X)
-            
-            -- 计算新的角度（旋转效果）
-            local newAngle = angle + math.rad(rotationSpeed * 0.1)
+            -- 更新角度（实现旋转）
+            data.angle = data.angle + math.rad(rotationSpeed * 0.1)
             
             -- 计算目标位置（在环绕圈上）
             local targetPos = Vector3.new(
-                center.X + math.cos(newAngle) * math.min(ringRadius, distance),
-                center.Y + 5,  -- 稍微高于玩家
-                center.Z + math.sin(newAngle) * math.min(ringRadius, distance)
+                center.X + math.cos(data.angle) * ringRadius,
+                center.Y + data.height + 5,  -- 基础高度 + 随机高度变化
+                center.Z + math.sin(data.angle) * ringRadius
             )
             
             -- 计算朝向目标的方向并设置速度
@@ -298,7 +316,7 @@ local function updateRingParts()
     end
 end
 
--- 主循环（使用Velocity而不是AlignPosition）
+-- 主循环
 RunService.Heartbeat:Connect(function()
     updateRingParts()
     
@@ -321,13 +339,9 @@ ToggleButton.MouseButton1Click:Connect(function()
     if ringPartsEnabled then
         initializeParts()
     else
-        -- 关闭时只需停止设置Velocity，不需要特殊清理
-        -- 部件会自然停止移动
+        -- 关闭时彻底清理所有控制
         for part, _ in pairs(controlledParts) do
-            if part and part.Parent then
-                part.Velocity = Vector3.new(0, 0, 0)
-                part.CanCollide = true  -- 恢复碰撞
-            end
+            removePartFromControl(part)
         end
         controlledParts = {}
     end
