@@ -140,7 +140,7 @@ IncreaseSpeed.Parent = MainFrame
 local SpeedDisplay = Instance.new("TextLabel")
 SpeedDisplay.Size = UDim2.new(0.4, 0, 0, 30)
 SpeedDisplay.Position = UDim2.new(0.3, 0, 0.75, 0)
-SpeedDisplay.Text = "10"
+SpeedDisplay.Text = "12"
 SpeedDisplay.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 SpeedDisplay.TextColor3 = Color3.fromRGB(0, 150, 255)
 SpeedDisplay.Font = Enum.Font.Gotham
@@ -280,7 +280,9 @@ end
 
 local radius = 50
 local height = 100
-local rotationSpeed = 10  -- 默认速度
+-- 新的速度计算：1速度 = 30秒一圈，2速度 = 15秒一圈，以此类推
+-- rotationSpeed 现在表示每秒旋转的角度（度数）
+local rotationSpeed = 12  -- 默认速度：360度/30秒 = 12度/秒
 local attractionStrength = 1000
 local ringPartsEnabled = false
 
@@ -321,7 +323,10 @@ end
 workspace.DescendantAdded:Connect(addPart)
 workspace.DescendantRemoving:Connect(removePart)
 
-RunService.Heartbeat:Connect(function()
+-- 添加时间累积变量用于平滑旋转
+local rotationAccumulator = 0
+
+RunService.Heartbeat:Connect(function(deltaTime)
     if not ringPartsEnabled then
         return
     end
@@ -330,12 +335,17 @@ RunService.Heartbeat:Connect(function()
     if humanoidRootPart then
         local tornadoCenter = humanoidRootPart.Position
         
+        -- 累积旋转角度（基于时间）
+        rotationAccumulator = rotationAccumulator + math.rad(rotationSpeed) * deltaTime
+        
         for _, part in pairs(parts) do
             if part.Parent and not part.Anchored then
                 local pos = part.Position
                 local distance = (Vector3.new(pos.X, tornadoCenter.Y, pos.Z) - tornadoCenter).Magnitude
                 local angle = math.atan2(pos.Z - tornadoCenter.Z, pos.X - tornadoCenter.X)
-                local newAngle = angle + math.rad(rotationSpeed)  -- 使用可调节的速度
+                
+                -- 使用累积的角度而不是每帧固定增量
+                local newAngle = angle + rotationAccumulator
                 
                 local targetPos = Vector3.new(
                     tornadoCenter.X + math.cos(newAngle) * math.min(radius, distance),
@@ -368,15 +378,28 @@ IncreaseRadius.MouseButton1Click:Connect(function()
     RadiusDisplay.Text = tostring(radius)
 end)
 
--- 速度控制 (0-100范围)
+-- 速度控制 (1-100范围，1速度=30秒一圈，2速度=15秒一圈，以此类推)
 DecreaseSpeed.MouseButton1Click:Connect(function()
-    rotationSpeed = math.max(0, rotationSpeed - 1)
-    SpeedDisplay.Text = tostring(rotationSpeed)
+    -- 计算新的速度值（1-100）
+    local currentSpeedValue = math.floor(rotationSpeed / 0.3333)  -- 转换为1-100的值
+    currentSpeedValue = math.max(1, currentSpeedValue - 1)
+    
+    -- 转换为实际的旋转速度（度/秒）
+    -- 公式：rotationSpeed = 360 / (30 / speedValue) = 12 * speedValue
+    rotationSpeed = 12 * currentSpeedValue
+    
+    SpeedDisplay.Text = tostring(currentSpeedValue)
 end)
 
 IncreaseSpeed.MouseButton1Click:Connect(function()
-    rotationSpeed = math.min(100, rotationSpeed + 1)
-    SpeedDisplay.Text = tostring(rotationSpeed)
+    -- 计算新的速度值（1-100）
+    local currentSpeedValue = math.floor(rotationSpeed / 0.3333)  -- 转换为1-100的值
+    currentSpeedValue = math.min(100, currentSpeedValue + 1)
+    
+    -- 转换为实际的旋转速度（度/秒）
+    rotationSpeed = 12 * currentSpeedValue
+    
+    SpeedDisplay.Text = tostring(currentSpeedValue)
 end)
 
 -- 通知
