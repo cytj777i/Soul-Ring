@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
 local LocalPlayer = Players.LocalPlayer
 
 -- 创建GUI
@@ -30,7 +31,7 @@ UIStroke.Parent = MainFrame
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 40)
 Title.Position = UDim2.new(0, 0, 0, 0)
-Title.Text = "XTTT召唤魂环脚本"
+Title.Text = "XTTT成为封号斗罗脚本"
 Title.TextColor3 = Color3.fromRGB(0, 150, 255)
 Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 Title.Font = Enum.Font.GothamBold
@@ -41,6 +42,22 @@ Title.Parent = MainFrame
 local TitleCorner = Instance.new("UICorner")
 TitleCorner.CornerRadius = UDim.new(0, 15)
 TitleCorner.Parent = Title
+
+-- 添加最小化按钮
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Size = UDim2.new(0, 25, 0, 25)
+MinimizeButton.Position = UDim2.new(1, -30, 0, 5)
+MinimizeButton.Text = "-"
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeButton.Font = Enum.Font.GothamBold
+MinimizeButton.TextSize = 16
+MinimizeButton.Parent = MainFrame
+
+-- 最小化按钮圆角
+local MinimizeCorner = Instance.new("UICorner")
+MinimizeCorner.CornerRadius = UDim.new(0, 12)
+MinimizeCorner.Parent = MinimizeButton
 
 -- 状态显示
 local StatusLabel = Instance.new("TextLabel")
@@ -184,8 +201,30 @@ local SpeedDisplayCorner = Instance.new("UICorner")
 SpeedDisplayCorner.CornerRadius = UDim.new(0, 8)
 SpeedDisplayCorner.Parent = SpeedDisplay
 
+-- 最小化功能
+local minimized = false
+local originalSize = MainFrame.Size
+MinimizeButton.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    if minimized then
+        MainFrame:TweenSize(UDim2.new(0, 300, 0, 40), "Out", "Quad", 0.3, true)
+        MinimizeButton.Text = "+"
+        ToggleButton.Visible = false
+        StatusLabel.Visible = false
+        RangeSection.Visible = false
+        SpeedSection.Visible = false
+    else
+        MainFrame:TweenSize(originalSize, "Out", "Quad", 0.3, true)
+        MinimizeButton.Text = "-"
+        ToggleButton.Visible = true
+        StatusLabel.Visible = true
+        RangeSection.Visible = true
+        SpeedSection.Visible = true
+    end
+end)
+
 -- 使GUI可拖动
-local dragging
+local dragging = false
 local dragInput
 local dragStart
 local startPos
@@ -195,12 +234,12 @@ local function update(input)
     MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 end
 
-MainFrame.InputBegan:Connect(function(input)
+Title.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
         dragStart = input.Position
         startPos = MainFrame.Position
-
+        
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
                 dragging = false
@@ -209,7 +248,7 @@ MainFrame.InputBegan:Connect(function(input)
     end
 end)
 
-MainFrame.InputChanged:Connect(function(input)
+Title.InputChanged:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseMovement then
         dragInput = input
     end
@@ -264,7 +303,7 @@ local function collectUnanchoredParts()
     end
     
     -- 更新状态显示
-    StatusLabel.Text = "已吸附物体: " .. #collectedParts
+    StatusLabel.Text = "变成魂环物体: " .. #collectedParts
 end
 
 -- 开始旋转
@@ -321,7 +360,7 @@ local function startRotation()
         end
         
         -- 更新状态显示
-        StatusLabel.Text = "已吸附物体: " .. #collectedParts
+        StatusLabel.Text = "变成魂环物体: " .. #collectedParts
     end)
 end
 
@@ -341,7 +380,7 @@ local function stopRotation()
     end
     
     collectedParts = {}
-    StatusLabel.Text = "已吸附物体: 0"
+    StatusLabel.Text = "变成魂环物体: 0"
 end
 
 -- 控制按钮功能
@@ -349,12 +388,12 @@ ToggleButton.MouseButton1Click:Connect(function()
     isActive = not isActive
     
     if isActive then
-        ToggleButton.Text = "停止吸附环绕"
+        ToggleButton.Text = "停止魂环召唤"
         ToggleButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
         collectUnanchoredParts()
         startRotation()
     else
-        ToggleButton.Text = "开始吸附环绕"
+        ToggleButton.Text = "开始召唤魂环"
         ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 150, 50)
         stopRotation()
     end
@@ -408,9 +447,11 @@ LocalPlayer.CharacterAdded:Connect(function()
         wait(1) -- 等待角色完全加载
         collectUnanchoredParts()
     end
-end)                                                                 -- 通知
+end)
+
+-- 通知
 StarterGui:SetCore("SendNotification", {
-    Title = "建议保持在飞行状态下开启",
-    Text = "不然容易出bug！",
+    Title = "XTTT魂环召唤脚本",
+    Text = "已加载成功！建议保持在飞行状态下开启",
     Duration = 5
 })
