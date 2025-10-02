@@ -33,7 +33,7 @@ UIStroke.Parent = MainFrame
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 40)
 Title.Position = UDim2.new(0, 0, 0, 0)
-Title.Text = "XTTT魂环召唤脚本"
+Title.Text = "XTTT低速魂环召唤脚本"
 Title.TextColor3 = Color3.fromRGB(0, 150, 255) -- 蓝色文字
 Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- 深灰色背景
 Title.Font = Enum.Font.GothamBold
@@ -396,7 +396,7 @@ end)
 
 -- 通知
 StarterGui:SetCore("SendNotification", {
-    Title = "XTTT魂环召唤脚本",
+    Title = "XTTT低速魂环召唤脚本",
     Text = "已加载成功！",
     Duration = 3
 })
