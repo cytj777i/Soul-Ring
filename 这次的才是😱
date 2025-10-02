@@ -280,7 +280,7 @@ end
 
 local radius = 50
 local height = 100
--- 速度系统：1速度 = 30秒一圈，2速度 = 15秒一圈，以此类推
+-- 速度系统78出错了但能正常玩就行
 local speedValue = 1  -- 速度值（1-100）
 local rotationSpeed = 12  -- 实际旋转速度（度/秒）：速度1 = 12度/秒 = 30秒一圈
 local attractionStrength = 1000
