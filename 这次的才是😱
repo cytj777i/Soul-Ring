@@ -140,7 +140,7 @@ IncreaseSpeed.Parent = MainFrame
 local SpeedDisplay = Instance.new("TextLabel")
 SpeedDisplay.Size = UDim2.new(0.4, 0, 0, 30)
 SpeedDisplay.Position = UDim2.new(0.3, 0, 0.75, 0)
-SpeedDisplay.Text = "12"
+SpeedDisplay.Text = "1"
 SpeedDisplay.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 SpeedDisplay.TextColor3 = Color3.fromRGB(0, 150, 255)
 SpeedDisplay.Font = Enum.Font.Gotham
@@ -280,9 +280,9 @@ end
 
 local radius = 50
 local height = 100
--- 新的速度计算：1速度 = 30秒一圈，2速度 = 15秒一圈，以此类推
--- rotationSpeed 现在表示每秒旋转的角度（度数）
-local rotationSpeed = 12  -- 默认速度：360度/30秒 = 12度/秒
+-- 速度系统：1速度 = 30秒一圈，2速度 = 15秒一圈，以此类推
+local speedValue = 1  -- 速度值（1-100）
+local rotationSpeed = 12  -- 实际旋转速度（度/秒）：速度1 = 12度/秒 = 30秒一圈
 local attractionStrength = 1000
 local ringPartsEnabled = false
 
@@ -380,26 +380,15 @@ end)
 
 -- 速度控制 (1-100范围，1速度=30秒一圈，2速度=15秒一圈，以此类推)
 DecreaseSpeed.MouseButton1Click:Connect(function()
-    -- 计算新的速度值（1-100）
-    local currentSpeedValue = math.floor(rotationSpeed / 0.3333)  -- 转换为1-100的值
-    currentSpeedValue = math.max(1, currentSpeedValue - 1)
-    
-    -- 转换为实际的旋转速度（度/秒）
-    -- 公式：rotationSpeed = 360 / (30 / speedValue) = 12 * speedValue
-    rotationSpeed = 12 * currentSpeedValue
-    
-    SpeedDisplay.Text = tostring(currentSpeedValue)
+    speedValue = math.max(1, speedValue - 1)
+    rotationSpeed = 12 * speedValue  -- 转换为实际的旋转速度（度/秒）
+    SpeedDisplay.Text = tostring(speedValue)
 end)
 
 IncreaseSpeed.MouseButton1Click:Connect(function()
-    -- 计算新的速度值（1-100）
-    local currentSpeedValue = math.floor(rotationSpeed / 0.3333)  -- 转换为1-100的值
-    currentSpeedValue = math.min(100, currentSpeedValue + 1)
-    
-    -- 转换为实际的旋转速度（度/秒）
-    rotationSpeed = 12 * currentSpeedValue
-    
-    SpeedDisplay.Text = tostring(currentSpeedValue)
+    speedValue = math.min(100, speedValue + 1)
+    rotationSpeed = 12 * speedValue  -- 转换为实际的旋转速度（度/秒）
+    SpeedDisplay.Text = tostring(speedValue)
 end)
 
 -- 通知
