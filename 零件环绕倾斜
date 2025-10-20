@@ -1,0 +1,448 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local SoundService = game:GetService("SoundService")
+local StarterGui = game:GetService("StarterGui")
+local TextChatService = game:GetService("TextChatService")
+local LocalPlayer = Players.LocalPlayer
+
+-- GUI 创建
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SuperRingPartsGUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 240, 0, 280) -- 增加了高度
+MainFrame.Position = UDim2.new(0.5, -120, 0.5, -140)
+MainFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- 白色背景
+MainFrame.BorderSizePixel = 0
+MainFrame.Parent = ScreenGui
+
+-- 使 GUI 圆角
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 20)
+UICorner.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 40)
+Title.Position = UDim2.new(0, 0, 0, 0)
+Title.Text = "零件环绕倾斜"
+Title.TextColor3 = Color3.fromRGB(0, 0, 0) -- 黑色文字
+Title.BackgroundColor3 = Color3.fromRGB(240, 240, 240) -- 浅灰色背景
+Title.Font = Enum.Font.Fondamento
+Title.TextSize = 22
+Title.Parent = MainFrame
+
+-- 使标题圆角
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 20)
+TitleCorner.Parent = Title
+
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = UDim2.new(0.8, 0, 0, 35)
+ToggleButton.Position = UDim2.new(0.1, 0, 0.2, 0)
+ToggleButton.Text = "零件环绕 关"
+ToggleButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- 红色（关闭状态）
+ToggleButton.TextColor3 = Color3.fromRGB(0, 0, 0) -- 黑色文字
+ToggleButton.Font = Enum.Font.Fondamento
+ToggleButton.TextSize = 18
+ToggleButton.Parent = MainFrame
+
+-- 使切换按钮圆角
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(0, 10)
+ToggleCorner.Parent = ToggleButton
+
+-- 半径控制
+local DecreaseRadius = Instance.new("TextButton")
+DecreaseRadius.Size = UDim2.new(0.2, 0, 0, 35)
+DecreaseRadius.Position = UDim2.new(0.1, 0, 0.35, 0)
+DecreaseRadius.Text = "<"
+DecreaseRadius.BackgroundColor3 = Color3.fromRGB(200, 200, 200) -- 灰色按钮
+DecreaseRadius.TextColor3 = Color3.fromRGB(0, 0, 0) -- 黑色文字
+DecreaseRadius.Font = Enum.Font.Fondamento
+DecreaseRadius.TextSize = 18
+DecreaseRadius.Parent = MainFrame
+
+-- 使减少按钮圆角
+local DecreaseCorner = Instance.new("UICorner")
+DecreaseCorner.CornerRadius = UDim.new(0, 10)
+DecreaseCorner.Parent = DecreaseRadius
+
+local IncreaseRadius = Instance.new("TextButton")
+IncreaseRadius.Size = UDim2.new(0.2, 0, 0, 35)
+IncreaseRadius.Position = UDim2.new(0.7, 0, 0.35, 0)
+IncreaseRadius.Text = ">"
+IncreaseRadius.BackgroundColor3 = Color3.fromRGB(200, 200, 200) -- 灰色按钮
+IncreaseRadius.TextColor3 = Color3.fromRGB(0, 0, 0) -- 黑色文字
+IncreaseRadius.Font = Enum.Font.Fondamento
+IncreaseRadius.TextSize = 18
+IncreaseRadius.Parent = MainFrame
+
+-- 使增加按钮圆角
+local IncreaseCorner = Instance.new("UICorner")
+IncreaseCorner.CornerRadius = UDim.new(0, 10)
+IncreaseCorner.Parent = IncreaseRadius
+
+local RadiusDisplay = Instance.new("TextLabel")
+RadiusDisplay.Size = UDim2.new(0.4, 0, 0, 35)
+RadiusDisplay.Position = UDim2.new(0.3, 0, 0.35, 0)
+RadiusDisplay.Text = "半径: 50"
+RadiusDisplay.BackgroundColor3 = Color3.fromRGB(240, 240, 240) -- 浅灰色背景
+RadiusDisplay.TextColor3 = Color3.fromRGB(0, 0, 0) -- 黑色文字
+RadiusDisplay.Font = Enum.Font.Fondamento
+RadiusDisplay.TextSize = 18
+RadiusDisplay.Parent = MainFrame
+
+-- 使半径显示圆角
+local RadiusCorner = Instance.new("UICorner")
+RadiusCorner.CornerRadius = UDim.new(0, 10)
+RadiusCorner.Parent = RadiusDisplay
+
+-- 倾斜控制
+local DecreaseTilt = Instance.new("TextButton")
+DecreaseTilt.Size = UDim2.new(0.2, 0, 0, 35)
+DecreaseTilt.Position = UDim2.new(0.1, 0, 0.5, 0)
+DecreaseTilt.Text = "<"
+DecreaseTilt.BackgroundColor3 = Color3.fromRGB(200, 200, 200) -- 灰色按钮
+DecreaseTilt.TextColor3 = Color3.fromRGB(0, 0, 0) -- 黑色文字
+DecreaseTilt.Font = Enum.Font.Fondamento
+DecreaseTilt.TextSize = 18
+DecreaseTilt.Parent = MainFrame
+
+-- 使减少倾斜按钮圆角
+local DecreaseTiltCorner = Instance.new("UICorner")
+DecreaseTiltCorner.CornerRadius = UDim.new(0, 10)
+DecreaseTiltCorner.Parent = DecreaseTilt
+
+local IncreaseTilt = Instance.new("TextButton")
+IncreaseTilt.Size = UDim2.new(0.2, 0, 0, 35)
+IncreaseTilt.Position = UDim2.new(0.7, 0, 0.5, 0)
+IncreaseTilt.Text = ">"
+IncreaseTilt.BackgroundColor3 = Color3.fromRGB(200, 200, 200) -- 灰色按钮
+IncreaseTilt.TextColor3 = Color3.fromRGB(0, 0, 0) -- 黑色文字
+IncreaseTilt.Font = Enum.Font.Fondamento
+IncreaseTilt.TextSize = 18
+IncreaseTilt.Parent = MainFrame
+
+-- 使增加倾斜按钮圆角
+local IncreaseTiltCorner = Instance.new("UICorner")
+IncreaseTiltCorner.CornerRadius = UDim.new(0, 10)
+IncreaseTiltCorner.Parent = IncreaseTilt
+
+local TiltDisplay = Instance.new("TextLabel")
+TiltDisplay.Size = UDim2.new(0.4, 0, 0, 35)
+TiltDisplay.Position = UDim2.new(0.3, 0, 0.5, 0)
+TiltDisplay.Text = "倾斜: 0°"
+TiltDisplay.BackgroundColor3 = Color3.fromRGB(240, 240, 240) -- 浅灰色背景
+TiltDisplay.TextColor3 = Color3.fromRGB(0, 0, 0) -- 黑色文字
+TiltDisplay.Font = Enum.Font.Fondamento
+TiltDisplay.TextSize = 18
+TiltDisplay.Parent = MainFrame
+
+-- 使倾斜显示圆角
+local TiltCorner = Instance.new("UICorner")
+TiltCorner.CornerRadius = UDim.new(0, 10)
+TiltCorner.Parent = TiltDisplay
+
+-- 速度控制
+local DecreaseSpeed = Instance.new("TextButton")
+DecreaseSpeed.Size = UDim2.new(0.2, 0, 0, 35)
+DecreaseSpeed.Position = UDim2.new(0.1, 0, 0.65, 0)
+DecreaseSpeed.Text = "<"
+DecreaseSpeed.BackgroundColor3 = Color3.fromRGB(200, 200, 200) -- 灰色按钮
+DecreaseSpeed.TextColor3 = Color3.fromRGB(0, 0, 0) -- 黑色文字
+DecreaseSpeed.Font = Enum.Font.Fondamento
+DecreaseSpeed.TextSize = 18
+DecreaseSpeed.Parent = MainFrame
+
+-- 使减少速度按钮圆角
+local DecreaseSpeedCorner = Instance.new("UICorner")
+DecreaseSpeedCorner.CornerRadius = UDim.new(0, 10)
+DecreaseSpeedCorner.Parent = DecreaseSpeed
+
+local IncreaseSpeed = Instance.new("TextButton")
+IncreaseSpeed.Size = UDim2.new(0.2, 0, 0, 35)
+IncreaseSpeed.Position = UDim2.new(0.7, 0, 0.65, 0)
+IncreaseSpeed.Text = ">"
+IncreaseSpeed.BackgroundColor3 = Color3.fromRGB(200, 200, 200) -- 灰色按钮
+IncreaseSpeed.TextColor3 = Color3.fromRGB(0, 0, 0) -- 黑色文字
+IncreaseSpeed.Font = Enum.Font.Fondamento
+IncreaseSpeed.TextSize = 18
+IncreaseSpeed.Parent = MainFrame
+
+-- 使增加速度按钮圆角
+local IncreaseSpeedCorner = Instance.new("UICorner")
+IncreaseSpeedCorner.CornerRadius = UDim.new(0, 10)
+IncreaseSpeedCorner.Parent = IncreaseSpeed
+
+local SpeedDisplay = Instance.new("TextLabel")
+SpeedDisplay.Size = UDim2.new(0.4, 0, 0, 35)
+SpeedDisplay.Position = UDim2.new(0.3, 0, 0.65, 0)
+SpeedDisplay.Text = "速度: 10"
+SpeedDisplay.BackgroundColor3 = Color3.fromRGB(240, 240, 240) -- 浅灰色背景
+SpeedDisplay.TextColor3 = Color3.fromRGB(0, 0, 0) -- 黑色文字
+SpeedDisplay.Font = Enum.Font.Fondamento
+SpeedDisplay.TextSize = 18
+SpeedDisplay.Parent = MainFrame
+
+-- 使速度显示圆角
+local SpeedCorner = Instance.new("UICorner")
+SpeedCorner.CornerRadius = UDim.new(0, 10)
+SpeedCorner.Parent = SpeedDisplay
+
+local Watermark = Instance.new("TextLabel")
+Watermark.Size = UDim2.new(1, 0, 0, 25)
+Watermark.Position = UDim2.new(0, 0, 1, -25)
+Watermark.Text = "零件环绕倾斜-由XTTT制作"
+Watermark.TextColor3 = Color3.fromRGB(0, 0, 0) -- 黑色文字
+Watermark.BackgroundTransparency = 1
+Watermark.Font = Enum.Font.Fondamento
+Watermark.TextSize = 14
+Watermark.Parent = MainFrame
+
+-- 添加最小化按钮
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
+MinimizeButton.Position = UDim2.new(1, -35, 0, 5)
+MinimizeButton.Text = "-"
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(200, 200, 200) -- 灰色按钮
+MinimizeButton.TextColor3 = Color3.fromRGB(0, 0, 0) -- 黑色文字
+MinimizeButton.Font = Enum.Font.Fondamento
+MinimizeButton.TextSize = 18
+MinimizeButton.Parent = MainFrame
+
+-- 使最小化按钮圆角
+local MinimizeCorner = Instance.new("UICorner")
+MinimizeCorner.CornerRadius = UDim.new(0, 15)
+MinimizeCorner.Parent = MinimizeButton
+
+-- 最小化功能
+local minimized = false
+MinimizeButton.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    if minimized then
+        MainFrame:TweenSize(UDim2.new(0, 240, 0, 40), "Out", "Quad", 0.3, true)
+        MinimizeButton.Text = "+"
+        ToggleButton.Visible = false
+        DecreaseRadius.Visible = false
+        IncreaseRadius.Visible = false
+        RadiusDisplay.Visible = false
+        DecreaseTilt.Visible = false
+        IncreaseTilt.Visible = false
+        TiltDisplay.Visible = false
+        DecreaseSpeed.Visible = false
+        IncreaseSpeed.Visible = false
+        SpeedDisplay.Visible = false
+        Watermark.Visible = false
+    else
+        MainFrame:TweenSize(UDim2.new(0, 240, 0, 280), "Out", "Quad", 0.3, true)
+        MinimizeButton.Text = "-"
+        ToggleButton.Visible = true
+        DecreaseRadius.Visible = true
+        IncreaseRadius.Visible = true
+        RadiusDisplay.Visible = true
+        DecreaseTilt.Visible = true
+        IncreaseTilt.Visible = true
+        TiltDisplay.Visible = true
+        DecreaseSpeed.Visible = true
+        IncreaseSpeed.Visible = true
+        SpeedDisplay.Visible = true
+        Watermark.Visible = true
+    end
+end)
+
+-- 使 GUI 可拖拽
+local dragging
+local dragInput
+local dragStart
+local startPos
+
+local function update(input)
+    local delta = input.Position - dragStart
+    MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+MainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+-- 零件环绕逻辑
+if not getgenv().Network then
+    getgenv().Network = {
+        BaseParts = {},
+        Velocity = Vector3.new(14.46262424, 14.46262424, 14.46262424)
+    }
+    
+    Network.RetainPart = function(Part)
+        if typeof(Part) == "Instance" and Part:IsA("BasePart") and Part:IsDescendantOf(workspace) then
+            table.insert(Network.BaseParts, Part)
+            Part.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
+            Part.CanCollide = false
+        end
+    end
+    
+    local function EnablePartControl()
+        LocalPlayer.ReplicationFocus = workspace
+        RunService.Heartbeat:Connect(function()
+            sethiddenproperty(LocalPlayer, "SimulationRadius", math.huge)
+            for _, Part in pairs(Network.BaseParts) do
+                if Part:IsDescendantOf(workspace) then
+                    Part.Velocity = Network.Velocity
+                end
+            end
+        end)
+    end
+    
+    EnablePartControl()
+end
+
+local radius = 50
+local height = 100
+local rotationSpeed = 10
+local attractionStrength = 1000
+local ringPartsEnabled = false
+local tiltAngle = 0 -- 0 = horizontal, 90 = vertical
+
+local function RetainPart(Part)
+    if Part:IsA("BasePart") and not Part.Anchored and Part:IsDescendantOf(workspace) then
+        if Part.Parent == LocalPlayer.Character or Part:IsDescendantOf(LocalPlayer.Character) then
+            return false
+        end
+        Part.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
+        Part.CanCollide = false
+        return true
+    end
+    return false
+end
+
+local parts = {}
+
+local function addPart(part)
+    if RetainPart(part) then
+        if not table.find(parts, part) then
+            table.insert(parts, part)
+        end
+    end
+end
+
+local function removePart(part)
+    local index = table.find(parts, part)
+    if index then
+        table.remove(parts, index)
+    end
+end
+
+for _, part in pairs(workspace:GetDescendants()) do
+    addPart(part)
+end
+
+workspace.DescendantAdded:Connect(addPart)
+workspace.DescendantRemoving:Connect(removePart)
+
+-- 修复后的环绕逻辑
+RunService.Heartbeat:Connect(function()
+    if not ringPartsEnabled then return end
+    
+    local humanoidRootPart = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if humanoidRootPart then
+        local tornadoCenter = humanoidRootPart.Position
+        local currentTime = tick()
+        
+        for i, part in pairs(parts) do
+            if part.Parent and not part.Anchored then
+                local pos = part.Position
+                
+                -- 计算零件在环绕中的角度位置
+                local angle = (currentTime * rotationSpeed + i * 0.1) % (2 * math.pi)
+                
+                -- 根据倾斜角度计算3D位置
+                local tiltRad = math.rad(tiltAngle)
+                
+                -- 统一计算公式，确保始终为圆形
+                local finalX = math.cos(angle) * radius
+                local verticalY = math.sin(angle) * radius * math.sin(tiltRad)
+                local finalZ = math.sin(angle) * radius * math.cos(tiltRad)
+                
+                local targetPos = Vector3.new(
+                    tornadoCenter.X + finalX,
+                    tornadoCenter.Y + verticalY,
+                    tornadoCenter.Z + finalZ
+                )
+                
+                -- 确保零件不会太靠近玩家
+                local distanceToCenter = (targetPos - tornadoCenter).Magnitude
+                if distanceToCenter < radius * 0.3 then
+                    -- 如果太靠近中心，向外推
+                    local direction = (targetPos - tornadoCenter).Unit
+                    targetPos = tornadoCenter + direction * (radius * 0.3)
+                end
+                
+                local directionToTarget = (targetPos - part.Position).Unit
+                part.Velocity = directionToTarget * attractionStrength
+            end
+        end
+    end
+end)
+
+-- 按钮功能
+ToggleButton.MouseButton1Click:Connect(function()
+    ringPartsEnabled = not ringPartsEnabled
+    ToggleButton.Text = ringPartsEnabled and "零件环绕 开" or "零件环绕 关"
+    ToggleButton.BackgroundColor3 = ringPartsEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0) -- 绿色开启，红色关闭
+end)
+
+DecreaseRadius.MouseButton1Click:Connect(function()
+    radius = math.max(10, radius - 5)
+    RadiusDisplay.Text = "半径: " .. radius
+end)
+
+IncreaseRadius.MouseButton1Click:Connect(function()
+    radius = math.min(100, radius + 5)
+    RadiusDisplay.Text = "半径: " .. radius
+end)
+
+-- 倾斜功能
+DecreaseTilt.MouseButton1Click:Connect(function()
+    tiltAngle = math.max(0, tiltAngle - 15)
+    TiltDisplay.Text = "倾斜: " .. tiltAngle .. "°"
+end)
+
+IncreaseTilt.MouseButton1Click:Connect(function()
+    tiltAngle = math.min(90, tiltAngle + 15)
+    TiltDisplay.Text = "倾斜: " .. tiltAngle .. "°"
+end)
+
+-- 速度功能
+DecreaseSpeed.MouseButton1Click:Connect(function()
+    rotationSpeed = math.max(1, rotationSpeed - 1)
+    SpeedDisplay.Text = "速度: " .. rotationSpeed
+end)
+
+IncreaseSpeed.MouseButton1Click:Connect(function()
+    rotationSpeed = math.min(50, rotationSpeed + 1)
+    SpeedDisplay.Text = "速度: " .. rotationSpeed
+end)
