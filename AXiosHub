@@ -1,0 +1,168 @@
+local CONFIG = {
+    API_URL = "https://robloxserver2.tagonmiku.workers.dev",
+    MAP_DATA = {
+        name = "自然灾害",
+        mapId = "natural_disaster", 
+        requireKey = true
+    }
+}
+
+-- 服务
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+
+-- 您提供的密钥
+local NATURAL_DISASTER_KEY = "6bce9a543936bae2c6038a6585b8a948_NDS"
+
+-- 辅助函数
+local function urlEncode(text)
+    if not text then return "" end
+    text = string.gsub(text, "\n", "\r\n")
+    text = string.gsub(text, "([^%w _%%%-%.~])", function(c)
+        return string.format("%%%02X", string.byte(c))
+    end)
+    return string.gsub(text, " ", "+")
+end
+
+local function extractJson(text)
+    if not text then return "" end
+    local startPos = string.find(text, "{")
+    local jsonText
+    if startPos then
+        jsonText = string.sub(text, startPos)
+        if not jsonText then jsonText = text end
+    else
+        jsonText = text
+    end
+    return jsonText
+end
+
+local function showNotification(message)
+    local PlayerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+    
+    -- 创建通知GUI
+    local notification = Instance.new("ScreenGui")
+    notification.Name = "NDLauncherNotification"
+    notification.ResetOnSpawn = false
+    notification.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    notification.Parent = PlayerGui
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 300, 0, 60)
+    frame.Position = UDim2.new(0.5, -150, 0, 20)
+    frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    frame.BorderSizePixel = 0
+    frame.Parent = notification
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = frame
+    
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = Color3.fromRGB(0, 255, 0)
+    stroke.Thickness = 2
+    stroke.Parent = frame
+    
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, -20, 1, 0)
+    label.Position = UDim2.new(0, 10, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = message
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextSize = 14
+    label.Font = Enum.Font.Gotham
+    label.TextWrapped = true
+    label.Parent = frame
+    
+    -- 4秒后自动移除
+    task.delay(4, function()
+        notification:Destroy()
+    end)
+end
+
+-- 主要加载函数
+local function loadNaturalDisasterScript()
+    showNotification("🌪️ 正在启动自然灾害脚本...")
+    
+    -- 验证密钥格式
+    if not NATURAL_DISASTER_KEY or NATURAL_DISASTER_KEY == "" then
+        showNotification("❌ 错误：未提供密钥")
+        return false
+    end
+    
+    -- 构建验证URL
+    local hwid = tostring(game:GetService("RbxAnalyticsService"):GetClientId())
+    local checksum = HttpService:GenerateGUID(false)
+    
+    local url = string.format("%s/check_key?key=%s&hwid=%s&map_id=%s&checksum=%s", 
+        CONFIG.API_URL, 
+        urlEncode(NATURAL_DISASTER_KEY), 
+        urlEncode(hwid), 
+        urlEncode(CONFIG.MAP_DATA.mapId), 
+        urlEncode(checksum))
+    
+    showNotification("🔑 正在验证密钥...")
+    
+    -- 发送API请求
+    local success, response = pcall(function()
+        return game:HttpGet(url)
+    end)
+    
+    if not success then
+        showNotification("❌ 连接失败 - 请检查网络连接")
+        return false
+    end
+    
+    -- 解析响应
+    local jsonText = extractJson(response)
+    local decodeSuccess, result = pcall(function()
+        return HttpService:JSONDecode(jsonText)
+    end)
+    
+    if not decodeSuccess then
+        showNotification("❌ 服务器响应无效")
+        return false
+    end
+    
+    -- 检查密钥是否有效
+    if result.status == "success" and result.data and result.data.script then
+        showNotification("✅ 密钥验证成功！正在加载脚本...")
+        
+        -- 为脚本设置全局变量
+        _G.Key = NATURAL_DISASTER_KEY
+        _G.MapID = CONFIG.MAP_DATA.mapId
+        _G.KeyInfo = result.data
+        
+        -- 执行脚本
+        task.wait(1)
+        local execSuccess, errorMsg = pcall(function()
+            loadstring(result.data.script)()
+        end)
+        
+        if execSuccess then
+            showNotification("🎮 自然灾害脚本已激活！")
+            return true
+        else
+            showNotification("❌ 脚本执行失败")
+            warn("自然灾害脚本错误:", errorMsg)
+            return false
+        end
+    else
+        showNotification("❌ 密钥无效: " .. (result.message or "未知错误"))
+        return false
+    end
+end
+
+-- 自动执行并处理错误
+local function initialize()
+    local success, err = pcall(function()
+        loadNaturalDisasterScript()
+    end)
+    
+    if not success then
+        showNotification("❌ 启动器错误: " .. tostring(err))
+    end
+end
+
+-- 启动过程
+initialize()
